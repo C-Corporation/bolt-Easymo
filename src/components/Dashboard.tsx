@@ -5,11 +5,13 @@ import TenantsTable from './TenantsTable';
 
 const Dashboard: React.FC = () => {
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar />
-      <main className="flex-1 overflow-auto p-6">
-        <TenantsTable />
-      </main>
+    <div className="h-screen bg-background">
+      <div className="relative h-full">
+        <Sidebar className="absolute top-10 left-5" />
+        <main className="ml-[276px] p-6 overflow-auto h-full">
+          <TenantsTable />
+        </main>
+      </div>
     </div>
   );
 };

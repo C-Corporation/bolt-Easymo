@@ -22,7 +22,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   ];
 
   return (
-    <div className={cn("flex flex-col h-screen bg-sidebar w-56 text-white", className)}>
+    <div className={cn("flex flex-col h-[calc(100vh-80px)] bg-sidebar w-56 text-white rounded-lg shadow-lg", className)}>
       <div className="p-4 flex items-center justify-center">
         <div className="w-16 h-16 bg-gray-300"></div>
       </div>
