@@ -22,22 +22,24 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   ];
 
   return (
-    <div className={cn("flex flex-col h-[calc(100vh-80px)] bg-sidebar w-56 text-white rounded-lg shadow-lg", className)}>
+    <div className={cn("flex flex-col h-[calc(100vh-80px)] bg-[#5D6169] w-60 text-white rounded-lg shadow-lg", className)}>
+      {/* Logo Section */}
       <div className="p-4 flex items-center justify-center">
         <div className="w-16 h-16 bg-gray-300"></div>
       </div>
       
+      {/* Navigation Menu */}
       <nav className="flex-1">
-        <ul className="space-y-2 px-2">
+        <ul className="space-y-3 px-3">
           {menuItems.map((item, index) => (
             <li key={index}>
               <Link
                 to={item.path}
                 className={cn(
-                  "flex items-center rounded-md px-4 py-3 text-sm font-medium",
+                  "flex items-center justify-center rounded-lg px-4 py-3 text-sm font-medium",
                   item.active
-                    ? "bg-primary text-white"
-                    : "bg-accent hover:bg-accent/80"
+                    ? "bg-[#E84A33] text-white" // Orange/red background for active item
+                    : "bg-[#9CA3AF] text-white hover:bg-[#9CA3AF]/80" // Gray background for inactive items
                 )}
               >
                 {item.label}
@@ -47,10 +49,11 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         </ul>
       </nav>
 
+      {/* Owner Section */}
       <div className="p-4 border-t border-gray-600">
-        <div className="bg-gray-600 rounded-lg p-4">
-          <div className="text-sm font-medium">Propriétaire</div>
-          <div className="text-sm mt-1">M. ZEKE Philippe</div>
+        <div className="bg-[#63686F] rounded-lg p-3 text-center">
+          <div className="text-sm font-medium text-white">Propriétaire</div>
+          <div className="text-sm mt-1 text-white">M. ZEKE Philippe</div>
         </div>
       </div>
     </div>
