@@ -20,7 +20,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   ];
 
   return (
-    <div className={cn("flex flex-col h-[calc(100vh-40px)] bg-[#5D6169] w-56 text-white rounded-lg shadow-lg overflow-y-auto", className)}>
+    <div className={cn("flex flex-col h-[calc(100vh-40px)] bg-[#5D6169] w-56 text-white rounded-lg shadow-lg overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100", className)}>
       {/* Logo Section */}
       <div className="p-4 flex items-center justify-center">
         <div className="w-16 h-16 bg-gray-300 flex-shrink-0"></div>
