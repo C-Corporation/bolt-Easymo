@@ -20,14 +20,14 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   ];
 
   return (
-    <div className={cn("flex flex-col h-[calc(100vh-40px)] bg-[#5D6169] w-56 text-white rounded-lg shadow-lg", className)}>
+    <div className={cn("flex flex-col h-[calc(100vh-40px)] bg-[#5D6169] w-56 text-white rounded-lg shadow-lg overflow-y-auto", className)}>
       {/* Logo Section */}
       <div className="p-4 flex items-center justify-center">
-        <div className="w-16 h-16 bg-gray-300"></div>
+        <div className="w-16 h-16 bg-gray-300 flex-shrink-0"></div>
       </div>
       
-      {/* Navigation Menu - Ajout de overflow-y-auto pour permettre le défilement */}
-      <nav className="flex-1 flex flex-col py-2 overflow-y-auto">
+      {/* Navigation Menu */}
+      <nav className="flex-1 flex flex-col py-2">
         <ul className="space-y-2 sm:space-y-2.5 md:space-y-3 px-3 flex-1">
           {menuItems.map((item, index) => (
             <li key={index}>

@@ -27,7 +27,7 @@ const tenantSchema = z.object({
   name: z.string().min(2, { message: 'Le nom est requis' }),
   status: z.enum(['En règle', 'Pas en règle']),
   unpaid: z.coerce.number().min(0, { message: 'Le montant ne peut pas être négatif' }),
-  observation: z.string().optional(),
+  observation: z.string().optional().default('RAS'),
   location: z.string().min(2, { message: 'La localisation est requise' }),
 });
 
@@ -149,7 +149,7 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onSubm
               <Button variant="outline" type="button" onClick={onClose}>
                 Annuler
               </Button>
-              <Button type="submit">Ajouter</Button>
+              <Button type="submit" className="bg-[#8f95a1] hover:bg-[#d9592b]">Ajouter</Button>
             </DialogFooter>
           </form>
         </Form>

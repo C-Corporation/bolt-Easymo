@@ -2,21 +2,15 @@
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { ChevronUp, ChevronDown, Plus, Trash } from 'lucide-react';
+import { ChevronUp, ChevronDown, Plus, Pencil, Calendar } from 'lucide-react';
 import { useTenants } from '@/hooks/useTenants';
 import AddTenantModal from './AddTenantModal';
 import { Tenant } from '@/types/tenant';
 import { Toaster } from '@/components/ui/toaster';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { Checkbox } from '@/components/ui/checkbox';
+import { format } from 'date-fns';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface SortConfig {
   key: keyof Tenant | null;
@@ -24,14 +18,15 @@ interface SortConfig {
 }
 
 const TenantsTable: React.FC = () => {
-  const { tenants, loading, deleteTenant, addTenant } = useTenants();
+  const { tenants, loading, addTenant } = useTenants();
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     key: null,
     direction: 'ascending',
   });
   const [sortedTenants, setSortedTenants] = useState<Tenant[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [tenantToDelete, setTenantToDelete] = useState<string | null>(null);
+  const [selectedTenants, setSelectedTenants] = useState<string[]>([]);
+  const [date, setDate] = useState<Date>(new Date());
 
   // Trier les données
   const sortData = (key: keyof Tenant) => {
@@ -68,27 +63,20 @@ const TenantsTable: React.FC = () => {
     );
   };
 
-  // Ouvrir la modal de confirmation de suppression
-  const openDeleteConfirmation = (id: string) => {
-    setTenantToDelete(id);
-  };
-
-  // Confirmer la suppression
-  const confirmDelete = async () => {
-    if (tenantToDelete) {
-      await deleteTenant(tenantToDelete);
-      setTenantToDelete(null);
-    }
-  };
-
-  // Annuler la suppression
-  const cancelDelete = () => {
-    setTenantToDelete(null);
-  };
-
   // Gestion du soumet pour ajouter un locataire
   const handleAddTenant = async (data: Omit<Tenant, 'id' | 'created_at' | 'updated_at'>) => {
     return await addTenant(data);
+  };
+
+  // Gérer la sélection des locataires
+  const toggleTenantSelection = (tenantId: string) => {
+    setSelectedTenants(prev => {
+      if (prev.includes(tenantId)) {
+        return prev.filter(id => id !== tenantId);
+      } else {
+        return [...prev, tenantId];
+      }
+    });
   };
 
   // Utiliser les données triées ou les données originales
@@ -115,7 +103,10 @@ const TenantsTable: React.FC = () => {
         <div className="sticky top-0 z-10">
           <div className="bg-[#62666c] rounded-full overflow-hidden">
             <div className="p-4">
-              <div className="grid grid-cols-[200px,1fr,1fr,1.5fr,1fr,80px] gap-4">
+              <div className="grid grid-cols-[50px,200px,1fr,1fr,1.5fr,1fr] gap-4">
+                <div className="flex items-center justify-center font-medium text-white text-sm uppercase tracking-wider">
+                  &nbsp;
+                </div>
                 <div 
                   className="cursor-pointer flex items-center justify-center font-medium text-white text-sm uppercase tracking-wider" 
                   onClick={() => sortData('name')}
@@ -146,9 +137,6 @@ const TenantsTable: React.FC = () => {
                 >
                   Localisation {getSortIcon('location')}
                 </div>
-                <div className="flex items-center justify-center font-medium text-white text-sm uppercase tracking-wider">
-                  Actions
-                </div>
               </div>
             </div>
           </div>
@@ -169,10 +157,17 @@ const TenantsTable: React.FC = () => {
               {displayedTenants.map((tenant, index) => (
                 <div 
                   key={tenant.id} 
-                  className={`grid grid-cols-[200px,1fr,1fr,1.5fr,1fr,80px] items-center ${
+                  className={`grid grid-cols-[50px,200px,1fr,1fr,1.5fr,1fr] items-center ${
                     index % 2 === 0 ? 'bg-white' : 'bg-[#f7f8f7] hover:bg-gray-100'
                   } rounded-full p-4`}
                 >
+                  <div className="flex justify-center">
+                    <Checkbox
+                      checked={selectedTenants.includes(tenant.id)}
+                      onCheckedChange={() => toggleTenantSelection(tenant.id)}
+                      className="data-[state=checked]:bg-[#8f95a1] data-[state=checked]:text-primary-foreground"
+                    />
+                  </div>
                   <div className="text-[#62666c] text-center">{tenant.name}</div>
                   <div className="text-center">
                     <span className={tenant.status === 'En règle' ? 'text-green-500' : 'text-red-500'}>
@@ -182,26 +177,51 @@ const TenantsTable: React.FC = () => {
                   <div className="text-[#62666c] text-center">{tenant.unpaid}</div>
                   <div className="text-[#62666c] truncate text-center">{tenant.observation}</div>
                   <div className="text-[#62666c] text-center">{tenant.location}</div>
-                  <div className="flex justify-center">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
-                      onClick={() => openDeleteConfirmation(tenant.id)}
-                    >
-                      <Trash className="h-4 w-4" />
-                    </Button>
-                  </div>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        <div className="p-4 border-t flex justify-end bg-white rounded-b-lg">
+        <div className="p-4 border-t flex items-center justify-end space-x-4 bg-white rounded-b-lg">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button 
+                variant="outline"
+                className="shadow-sm flex items-center"
+              >
+                <Calendar className="mr-2 h-4 w-4" />
+                {format(date, 'dd/MM/yyyy')}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <CalendarComponent
+                mode="single"
+                selected={date}
+                onSelect={(day) => day && setDate(day)}
+                initialFocus
+                className="p-3 pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+          
+          <div className="flex-grow"></div>
+          
+          <Button 
+            variant="outline"
+            disabled={selectedTenants.length === 0}
+            className={`shadow-sm ${
+              selectedTenants.length > 0 
+                ? 'bg-[#8f95a1] text-white hover:bg-[#d9592b]' 
+                : 'bg-gray-300 text-gray-500'
+            }`}
+          >
+            <Pencil className="mr-2 h-4 w-4" /> Modifier
+          </Button>
+          
           <Button 
             variant="default" 
-            className="shadow-sm"
+            className="shadow-sm bg-[#8f95a1] text-white hover:bg-[#d9592b]"
             onClick={() => setIsAddModalOpen(true)}
           >
             <Plus className="mr-2 h-4 w-4" /> Ajouter un locataire
@@ -215,22 +235,6 @@ const TenantsTable: React.FC = () => {
         onClose={() => setIsAddModalOpen(false)}
         onSubmit={handleAddTenant}
       />
-
-      {/* Modal de confirmation de suppression */}
-      <AlertDialog open={!!tenantToDelete} onOpenChange={cancelDelete}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmation de suppression</AlertDialogTitle>
-            <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer ce locataire ? Cette action est irréversible.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Supprimer</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       {/* Toaster pour les notifications */}
       <Toaster />

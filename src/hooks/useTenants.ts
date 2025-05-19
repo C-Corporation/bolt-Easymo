@@ -20,7 +20,13 @@ export const useTenants = () => {
       if (error) throw error;
       
       if (data) {
-        setTenants(data);
+        // Assurons-nous que les données correspondent au type Tenant
+        const typedData = data.map(item => ({
+          ...item,
+          status: item.status as 'En règle' | 'Pas en règle',
+          unpaid: Number(item.unpaid)
+        }));
+        setTenants(typedData);
       }
     } catch (error) {
       console.error('Erreur lors de la récupération des locataires:', error);
@@ -71,7 +77,13 @@ export const useTenants = () => {
       if (error) throw error;
       
       if (data) {
-        setTenants([...tenants, data[0]]);
+        // Même conversion de type que dans fetchTenants
+        const typedData = {
+          ...data[0],
+          status: data[0].status as 'En règle' | 'Pas en règle',
+          unpaid: Number(data[0].unpaid)
+        };
+        setTenants([...tenants, typedData]);
         toast({
           title: 'Succès',
           description: 'Locataire ajouté avec succès',
