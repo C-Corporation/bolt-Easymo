@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import { ChevronUp, ChevronDown, Plus } from 'lucide-react';
 
 interface Tenant {
   id: number;
@@ -72,68 +72,90 @@ const TenantsTable: React.FC = () => {
   };
   
   return (
-    <div className="bg-background rounded-lg">
-      <div className="flex justify-between items-center p-4 border-b">
-        <div>
-          <h1 className="text-4xl font-bold">Locataires</h1>
-          <p className="text-muted-foreground">La liste de tout les locataires de : M. ZEKE Philippe</p>
-        </div>
-        <div className="text-sm text-muted-foreground">
-          Dernière mise à jour : il y a 3 jours
+    <div className="h-full flex flex-col">
+      {/* En-tête de la page */}
+      <div className="mb-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-4xl font-bold text-white">Locataires</h1>
+            <p className="text-white">La liste de tout les locataires de : M. ZEKE Philippe</p>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            <span className="text-white">Dernière mise à jour : il y a 3 jours</span>
+          </div>
         </div>
       </div>
-      
-      <Table>
-        <TableHeader className="bg-accent">
-          <TableRow>
-            <TableHead className="w-[200px] cursor-pointer" onClick={() => sortData('name')}>
-              <div className="flex items-center">
-                Nom & Prénom {getSortIcon('name')}
+
+      {/* Conteneur du tableau avec fond blanc */}
+      <div className="flex-1 flex flex-col bg-white rounded-2xl shadow-sm overflow-hidden p-1.5">
+        {/* En-têtes du tableau avec coins arrondis en haut et en bas */}
+        <div className="sticky top-0 z-10">
+          <div className="bg-[#62666c] rounded-full overflow-hidden">
+            <div className="p-4">
+              <div className="grid grid-cols-[200px,1fr,1fr,1.5fr,1fr] gap-4">
+                <div 
+                  className="cursor-pointer flex items-center justify-center font-medium text-white text-sm uppercase tracking-wider" 
+                  onClick={() => sortData('name')}
+                >
+                  Nom & Prénom {getSortIcon('name')}
+                </div>
+                <div 
+                  className="cursor-pointer flex items-center justify-center font-medium text-white text-sm uppercase tracking-wider" 
+                  onClick={() => sortData('status')}
+                >
+                  Situation {getSortIcon('status')}
+                </div>
+                <div 
+                  className="cursor-pointer flex items-center justify-center font-medium text-white text-sm uppercase tracking-wider" 
+                  onClick={() => sortData('unpaid')}
+                >
+                  Impayés {getSortIcon('unpaid')}
+                </div>
+                <div 
+                  className="cursor-pointer flex items-center justify-center font-medium text-white text-sm uppercase tracking-wider" 
+                  onClick={() => sortData('observation')}
+                >
+                  Observation {getSortIcon('observation')}
+                </div>
+                <div 
+                  className="cursor-pointer flex items-center justify-center font-medium text-white text-sm uppercase tracking-wider" 
+                  onClick={() => sortData('location')}
+                >
+                  Localisation {getSortIcon('location')}
+                </div>
               </div>
-            </TableHead>
-            <TableHead className="cursor-pointer" onClick={() => sortData('status')}>
-              <div className="flex items-center">
-                Situation {getSortIcon('status')}
+            </div>
+          </div>
+        </div>
+        {/* Corps du tableau avec défilement */}
+        <div className="flex-1 overflow-y-auto max-h-[calc(100vh-250px)]">
+          <div className="space-y-2">
+            {tenants.map((tenant, index) => (
+              <div 
+                key={tenant.id} 
+                className={`grid grid-cols-[200px,1fr,1fr,1.5fr,1fr] items-center ${
+                  index % 2 === 0 ? 'bg-white' : 'bg-[#f7f8f7] hover:bg-gray-100'
+                } rounded-full p-4`}
+              >
+                <div className="text-[#62666c] text-center">{tenant.name}</div>
+                <div className="text-center">
+                  <span className={tenant.status === 'En règle' ? 'text-green-500' : 'text-red-500'}>
+                    {tenant.status}
+                  </span>
+                </div>
+                <div className="text-[#62666c] text-center">{tenant.unpaid}</div>
+                <div className="text-[#62666c] truncate text-center">{tenant.observation}</div>
+                <div className="text-[#62666c] text-center">{tenant.location}</div>
               </div>
-            </TableHead>
-            <TableHead className="cursor-pointer" onClick={() => sortData('unpaid')}>
-              <div className="flex items-center">
-                Impayés {getSortIcon('unpaid')}
-              </div>
-            </TableHead>
-            <TableHead className="cursor-pointer" onClick={() => sortData('observation')}>
-              <div className="flex items-center">
-                Observation {getSortIcon('observation')}
-              </div>
-            </TableHead>
-            <TableHead className="cursor-pointer" onClick={() => sortData('location')}>
-              <div className="flex items-center">
-                Localité {getSortIcon('location')}
-              </div>
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {tenants.map((tenant) => (
-            <TableRow key={tenant.id}>
-              <TableCell>{tenant.name}</TableCell>
-              <TableCell>
-                <span className={tenant.status === 'En règle' ? 'text-green-500' : 'text-red-500'}>
-                  {tenant.status}
-                </span>
-              </TableCell>
-              <TableCell>{tenant.unpaid}</TableCell>
-              <TableCell>{tenant.observation}</TableCell>
-              <TableCell>{tenant.location}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      
-      <div className="flex justify-end p-4">
-        <Button variant="default" className="rounded-full">
-          +
-        </Button>
+            ))}
+          </div>
+        </div>
+
+        <div className="p-4 border-t flex justify-end bg-white rounded-b-lg">
+          <Button variant="default" className="shadow-sm">
+            Ajouter un locataire
+          </Button>
+        </div>
       </div>
     </div>
   );
