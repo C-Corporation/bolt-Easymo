@@ -102,6 +102,44 @@ export const useTenants = () => {
     }
   };
 
+  // Mettre à jour un locataire
+  const updateTenant = async (id: string, tenant: Partial<Tenant>) => {
+    try {
+      const { data, error } = await supabase
+        .from('tenants')
+        .update(tenant)
+        .eq('id', id)
+        .select();
+
+      if (error) throw error;
+      
+      if (data) {
+        const updatedTenant = {
+          ...data[0],
+          status: data[0].status as 'En règle' | 'Pas en règle',
+          unpaid: Number(data[0].unpaid)
+        };
+        
+        setTenants(tenants.map(t => t.id === id ? updatedTenant : t));
+        
+        toast({
+          title: 'Succès',
+          description: 'Locataire mis à jour avec succès',
+        });
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du locataire:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de mettre à jour le locataire',
+        variant: 'destructive',
+      });
+      return false;
+    }
+  };
+
   useEffect(() => {
     fetchTenants();
   }, []);
@@ -112,5 +150,6 @@ export const useTenants = () => {
     fetchTenants,
     deleteTenant,
     addTenant,
+    updateTenant,
   };
 };

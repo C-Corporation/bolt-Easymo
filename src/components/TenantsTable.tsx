@@ -1,16 +1,19 @@
+
 import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronUp, ChevronDown, Plus, Pencil, Calendar, Info, Eye, Printer } from 'lucide-react';
+import { ChevronUp, ChevronDown, Plus, Pencil, Calendar, Info, Eye, Printer, Import } from 'lucide-react';
 import { useTenants } from '@/hooks/useTenants';
 import AddTenantModal from './AddTenantModal';
 import ExportModal from './ExportModal';
+import ImportModal from './ImportModal';
 import TenantDetailModal from './TenantDetailModal';
+import TenantEditModal from './TenantEditModal';
 import { Tenant } from '@/types/tenant';
 import { Toaster } from '@/components/ui/toaster';
 import { toast } from '@/components/ui/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
-import { format, startOfMonth, addMonths, subMonths } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { format, startOfMonth, addMonths, subMonths } from 'date-fns';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardContent } from '@/components/ui/card';
@@ -46,22 +49,22 @@ interface Column {
 }
 
 const TenantsTable: React.FC = () => {
-  const { tenants, loading } = useTenants();
+  const { tenants, loading, fetchTenants } = useTenants();
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     key: null,
     direction: 'ascending',
   });
   const [sortedTenants, setSortedTenants] = useState<Tenant[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [selectedTenants, setSelectedTenants] = useState<string[]>([]);
   const [date, setDate] = useState<Date>(new Date());
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<'all' | 'En règle' | 'Pas en règle'>('all');
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [currentEditIndex, setCurrentEditIndex] = useState(0);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   
   // Configuration des colonnes avec visibilité
   const [columns, setColumns] = useState<Column[]>([
@@ -143,22 +146,14 @@ const TenantsTable: React.FC = () => {
     setIsDetailModalOpen(true);
   };
 
-  // Commencer la modification des locataires sélectionnés
-  const startEditing = () => {
+  // Commencer la modification du locataire sélectionné
+  const handleEdit = () => {
     if (selectedTenants.length > 0) {
-      setCurrentEditIndex(0);
-      setIsEditModalOpen(true);
-    }
-  };
-
-  // Passer au prochain locataire pour modification
-  const handleNextTenant = () => {
-    if (currentEditIndex < selectedTenants.length - 1) {
-      setCurrentEditIndex(prev => prev + 1);
-    } else {
-      // Terminer le processus de modification
-      setIsEditModalOpen(false);
-      setSelectedTenants([]);
+      const tenantToEdit = tenants.find(tenant => tenant.id === selectedTenants[0]);
+      if (tenantToEdit) {
+        setSelectedTenant(tenantToEdit);
+        setIsEditModalOpen(true);
+      }
     }
   };
 
@@ -212,14 +207,17 @@ const TenantsTable: React.FC = () => {
   const getCellValue = (tenant: Tenant, key: Column['key']) => {
     switch (key) {
       case 'caution':
-        return formatNumber(tenant.caution || 5000); // Valeur fictive ou réelle
+        return formatNumber(tenant.caution || 0);
       case 'arrival_date':
-        return tenant.arrival_date || '01/06/2023'; // Date d'arrivée
+        return tenant.arrival_date ? format(new Date(tenant.arrival_date), 'dd/MM/yyyy') : '-';
       case 'updated_at':
         return tenant.updated_at ? format(new Date(tenant.updated_at), 'dd/MM/yyyy HH:mm') : '-';
       default:
         if (key === 'unpaid') {
-          return formatNumber(tenant[key] as number);
+          return formatNumber(tenant[key]);
+        }
+        if (key === 'name' && tenant.firstName) {
+          return `${tenant.name} ${tenant.firstName}`;
         }
         return tenant[key as keyof Tenant] || '-';
     }
@@ -247,9 +245,32 @@ const TenantsTable: React.FC = () => {
           cellPadding: 2,
         },
         headStyles: {
-          fillColor: [143, 149, 161],
+          fillColor: [93, 97, 105],
           textColor: [255, 255, 255],
           fontStyle: 'bold',
+        },
+      });
+
+      // Ajout des sous-totaux au PDF
+      const startY = doc.autoTable.previous.finalY + 10;
+      doc.setFontSize(10);
+      doc.text('Récapitulatif', 14, startY);
+      
+      doc.autoTable({
+        startY: startY + 5,
+        body: [
+          ['Nombre de locataires', stats.total.toString()],
+          ['En règle', stats.inOrder.toString()],
+          ['Pas en règle', stats.notInOrder.toString()],
+          ['Total impayés', formatNumber(stats.totalUnpaid)],
+        ],
+        theme: 'plain',
+        styles: {
+          fontSize: 8,
+          cellPadding: 2,
+        },
+        columnStyles: {
+          0: { fontStyle: 'bold' },
         },
       });
       
@@ -283,6 +304,75 @@ const TenantsTable: React.FC = () => {
   const visibleColumns = useMemo(() => {
     return columns.filter(column => column.visible);
   }, [columns]);
+
+  // Fonction pour sélectionner le mois
+  const handleMonthSelect = (date: Date | undefined) => {
+    if (date) {
+      setDate(startOfMonth(date));
+    }
+  };
+
+  // Rendu du composant MonthPicker personnalisé
+  const MonthPicker = () => (
+    <div className="p-3">
+      <div className="flex justify-between items-center mb-4">
+        <Button 
+          variant="ghost" 
+          onClick={() => navigateMonth('prev')}
+          size="sm"
+        >
+          &lt;
+        </Button>
+        <h2 className="text-center font-medium">
+          {format(date, 'MMMM yyyy', { locale: fr })}
+        </h2>
+        <Button 
+          variant="ghost" 
+          onClick={() => navigateMonth('next')}
+          size="sm"
+        >
+          &gt;
+        </Button>
+      </div>
+      
+      <div className="grid grid-cols-3 gap-2">
+        {Array.from({ length: 12 }, (_, i) => {
+          const monthDate = new Date(date.getFullYear(), i, 1);
+          const isCurrentMonth = i === date.getMonth();
+          
+          return (
+            <Button
+              key={i}
+              variant={isCurrentMonth ? "default" : "outline"}
+              size="sm"
+              className={`text-sm ${isCurrentMonth ? 'bg-[#8f95a1]' : ''}`}
+              onClick={() => handleMonthSelect(monthDate)}
+            >
+              {format(monthDate, 'MMM', { locale: fr })}
+            </Button>
+          );
+        })}
+      </div>
+      
+      <div className="mt-4 flex justify-between items-center">
+        <Button 
+          variant="outline"
+          size="sm" 
+          onClick={() => setDate(new Date(date.getFullYear() - 1, date.getMonth(), 1))}
+        >
+          {date.getFullYear() - 1}
+        </Button>
+        <span className="font-medium">{date.getFullYear()}</span>
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => setDate(new Date(date.getFullYear() + 1, date.getMonth(), 1))}
+        >
+          {date.getFullYear() + 1}
+        </Button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="h-full flex flex-col">
@@ -357,13 +447,11 @@ const TenantsTable: React.FC = () => {
                   onMouseLeave={() => setHoveredRow(null)}
                 >
                   <div className="flex justify-center">
-                    {/* Toujours afficher la case à cocher si elle est sélectionnée */}
+                    {/* Checkboxes toujours visibles */}
                     <Checkbox
                       checked={selectedTenants.includes(tenant.id)}
                       onCheckedChange={() => toggleTenantSelection(tenant.id)}
-                      className={`data-[state=checked]:bg-[#8f95a1] data-[state=checked]:text-primary-foreground ${
-                        selectedTenants.includes(tenant.id) || hoveredRow === tenant.id ? 'visible' : 'invisible'
-                      }`}
+                      className="data-[state=checked]:bg-[#8f95a1] data-[state=checked]:text-primary-foreground"
                     />
                   </div>
                   
@@ -450,13 +538,13 @@ const TenantsTable: React.FC = () => {
           <div className="flex space-x-4">
             <Button 
               variant="outline"
-              disabled={selectedTenants.length === 0}
+              disabled={selectedTenants.length !== 1}
               className={`shadow-sm ${
-                selectedTenants.length > 0 
+                selectedTenants.length === 1 
                   ? 'bg-[#8f95a1] text-white hover:bg-[#d9592b]' 
                   : 'bg-gray-300 text-gray-500'
               }`}
-              onClick={startEditing}
+              onClick={handleEdit}
             >
               <Pencil className="mr-2 h-4 w-4" /> Modifier
             </Button>
@@ -472,6 +560,14 @@ const TenantsTable: React.FC = () => {
           
           {/* Boutons à droite */}
           <div className="flex items-center space-x-4">
+            <Button 
+              variant="outline"
+              className="shadow-sm"
+              onClick={() => setIsImportModalOpen(true)}
+            >
+              <Import className="mr-2 h-4 w-4" /> Importer
+            </Button>
+            
             <Button 
               variant="outline"
               className="shadow-sm"
@@ -514,21 +610,7 @@ const TenantsTable: React.FC = () => {
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="end">
-                <CalendarComponent
-                  mode="single"
-                  selected={date}
-                  onSelect={(day) => day && setDate(startOfMonth(day))}
-                  initialFocus
-                  className="p-3 pointer-events-auto"
-                  captionLayout="dropdown-buttons"
-                  fromMonth={new Date(2020, 0)}
-                  toMonth={new Date(2030, 11)}
-                  showOutsideDays={false}
-                  fixedWeeks
-                  formatters={{
-                    formatCaption: (date) => format(date, 'MMMM yyyy', { locale: fr })
-                  }}
-                />
+                <MonthPicker />
               </PopoverContent>
             </Popover>
           </div>
@@ -540,6 +622,13 @@ const TenantsTable: React.FC = () => {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSubmit={handleAddTenant}
+      />
+      
+      {/* Modal d'importation */}
+      <ImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImportSuccess={fetchTenants}
       />
       
       {/* Modal d'exportation */}
@@ -554,6 +643,14 @@ const TenantsTable: React.FC = () => {
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
         tenant={selectedTenant}
+      />
+
+      {/* Modal d'édition du locataire */}
+      <TenantEditModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        tenant={selectedTenant}
+        onEditSuccess={fetchTenants}
       />
 
       {/* Toaster pour les notifications */}

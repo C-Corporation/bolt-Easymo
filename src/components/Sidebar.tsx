@@ -23,8 +23,8 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     <div className={cn("flex flex-col h-[calc(100vh-40px)] bg-[#5D6169] w-56 text-white rounded-lg shadow-lg overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100", className)}>
       {/* Logo Section */}
       <div className="p-4 flex items-center justify-center">
-        <div className="w-16 h-16 flex-shrink-0 overflow-hidden">
-          <img src="/lovable-uploads/80f09ab3-084a-4995-ae6f-fc634ab8f40f.png" alt="Logo" className="w-full h-full object-contain" />
+        <div className="w-24 h-16 flex-shrink-0 overflow-hidden">
+          <img src="/lovable-uploads/a3049965-2d32-42c6-9ecf-d1ebc4889153.png" alt="Logo" className="w-full h-full object-contain" />
         </div>
       </div>
       
