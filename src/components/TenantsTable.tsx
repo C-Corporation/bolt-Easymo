@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronUp, ChevronDown, Plus, Pencil, Calendar, Info, Eye, Printer } from 'lucide-react';
@@ -14,6 +13,9 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,6 +49,8 @@ const TenantsTable: React.FC = () => {
   const [date, setDate] = useState<Date>(new Date());
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<'all' | 'En règle' | 'Pas en règle'>('all');
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [currentEditIndex, setCurrentEditIndex] = useState(0);
   
   // Configuration des colonnes avec visibilité
   const [columns, setColumns] = useState<Column[]>([
@@ -122,6 +126,25 @@ const TenantsTable: React.FC = () => {
     });
   };
 
+  // Commencer la modification des locataires sélectionnés
+  const startEditing = () => {
+    if (selectedTenants.length > 0) {
+      setCurrentEditIndex(0);
+      setIsEditModalOpen(true);
+    }
+  };
+
+  // Passer au prochain locataire pour modification
+  const handleNextTenant = () => {
+    if (currentEditIndex < selectedTenants.length - 1) {
+      setCurrentEditIndex(prev => prev + 1);
+    } else {
+      // Terminer le processus de modification
+      setIsEditModalOpen(false);
+      setSelectedTenants([]);
+    }
+  };
+
   // Toggle le filtre de statut
   const toggleStatusFilter = (status: 'En règle' | 'Pas en règle') => {
     if (selectedStatus === status) {
@@ -187,12 +210,56 @@ const TenantsTable: React.FC = () => {
 
   // Gérer l'export
   const handleExport = (format: 'pdf' | 'excel') => {
-    toast({
-      title: `Export ${format.toUpperCase()} en cours`,
-      description: `Les données sont en cours d'exportation au format ${format.toUpperCase()}`,
-    });
+    const visibleColumnKeys = columns.filter(col => col.visible).map(col => col.key);
+    const visibleColumnLabels = columns.filter(col => col.visible).map(col => col.label);
+    
+    if (format === 'pdf') {
+      const doc = new jsPDF();
+      const tableData = filteredTenants.map(tenant => 
+        visibleColumnKeys.map(key => getCellValue(tenant, key))
+      );
+      
+      doc.text('Liste des locataires', 14, 16);
+      (doc as any).autoTable({
+        head: [visibleColumnLabels],
+        body: tableData,
+        startY: 20,
+        theme: 'grid',
+        styles: {
+          fontSize: 8,
+          cellPadding: 2,
+        },
+        headStyles: {
+          fillColor: [143, 149, 161],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+        },
+      });
+      
+      doc.save('locataires.pdf');
+      toast({
+        title: 'Export PDF réussi',
+        description: 'Le document a été généré avec succès',
+      });
+    } else if (format === 'excel') {
+      const worksheet = XLSX.utils.aoa_to_sheet([
+        visibleColumnLabels,
+        ...filteredTenants.map(tenant => 
+          visibleColumnKeys.map(key => getCellValue(tenant, key))
+        )
+      ]);
+      
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Locataires');
+      XLSX.writeFile(workbook, 'locataires.xlsx');
+      
+      toast({
+        title: 'Export Excel réussi',
+        description: 'Le document a été généré avec succès',
+      });
+    }
+    
     setIsExportModalOpen(false);
-    // Logique d'exportation à implémenter
   };
 
   // Les colonnes visibles
@@ -273,17 +340,22 @@ const TenantsTable: React.FC = () => {
                   onMouseLeave={() => setHoveredRow(null)}
                 >
                   <div className="flex justify-center">
-                    {hoveredRow === tenant.id && (
+                    {hoveredRow === tenant.id || selectedTenants.includes(tenant.id) ? (
                       <Checkbox
                         checked={selectedTenants.includes(tenant.id)}
                         onCheckedChange={() => toggleTenantSelection(tenant.id)}
                         className="data-[state=checked]:bg-[#8f95a1] data-[state=checked]:text-primary-foreground"
                       />
-                    )}
+                    ) : null}
                   </div>
                   
                   {visibleColumns.map((column) => (
-                    <div key={`${tenant.id}-${column.key}`} className="text-[#62666c] text-center truncate">
+                    <div 
+                      key={`${tenant.id}-${column.key}`} 
+                      className={`text-center truncate ${
+                        column.key === 'status' && tenant[column.key] === 'Pas en règle' ? 'text-red-500' : 'text-[#62666c]'
+                      }`}
+                    >
                       {getCellValue(tenant, column.key)}
                     </div>
                   ))}
@@ -379,6 +451,7 @@ const TenantsTable: React.FC = () => {
                   ? 'bg-[#8f95a1] text-white hover:bg-[#d9592b]' 
                   : 'bg-gray-300 text-gray-500'
               }`}
+              onClick={startEditing}
             >
               <Pencil className="mr-2 h-4 w-4" /> Modifier
             </Button>

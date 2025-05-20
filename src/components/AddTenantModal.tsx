@@ -52,7 +52,16 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onSubm
   });
 
   const handleSubmit = async (data: TenantFormValues) => {
-    const success = await onSubmit(data);
+    // Ensure the data is complete with all required fields
+    const tenantData: Omit<Tenant, 'id' | 'created_at' | 'updated_at'> = {
+      name: data.name,
+      status: data.status,
+      unpaid: data.unpaid,
+      observation: data.observation || 'RAS',
+      location: data.location
+    };
+    
+    const success = await onSubmit(tenantData);
     if (success) {
       form.reset();
       onClose();
