@@ -1,11 +1,13 @@
 
 import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronUp, ChevronDown, Plus, Pencil, Calendar, Info, Eye, EyeOff } from 'lucide-react';
+import { ChevronUp, ChevronDown, Plus, Pencil, Calendar, Info, Eye, Printer } from 'lucide-react';
 import { useTenants } from '@/hooks/useTenants';
 import AddTenantModal from './AddTenantModal';
+import ExportModal from './ExportModal';
 import { Tenant } from '@/types/tenant';
 import { Toaster } from '@/components/ui/toaster';
+import { toast } from '@/components/ui/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
 import { format, startOfMonth, addMonths, subMonths } from 'date-fns';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
@@ -40,6 +42,7 @@ const TenantsTable: React.FC = () => {
   });
   const [sortedTenants, setSortedTenants] = useState<Tenant[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [selectedTenants, setSelectedTenants] = useState<string[]>([]);
   const [date, setDate] = useState<Date>(new Date());
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
@@ -182,6 +185,16 @@ const TenantsTable: React.FC = () => {
     }
   };
 
+  // Gérer l'export
+  const handleExport = (format: 'pdf' | 'excel') => {
+    toast({
+      title: `Export ${format.toUpperCase()} en cours`,
+      description: `Les données sont en cours d'exportation au format ${format.toUpperCase()}`,
+    });
+    setIsExportModalOpen(false);
+    // Logique d'exportation à implémenter
+  };
+
   // Les colonnes visibles
   const visibleColumns = useMemo(() => {
     return columns.filter(column => column.visible);
@@ -204,32 +217,6 @@ const TenantsTable: React.FC = () => {
 
       {/* Conteneur du tableau avec fond blanc */}
       <div className="flex-1 flex flex-col bg-white rounded-2xl shadow-sm overflow-hidden p-1.5">
-        {/* Options du tableau et bouton de colonnes */}
-        <div className="flex justify-end mb-2 px-4 pt-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <Eye className="h-4 w-4" />
-                Colonnes
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-white w-56">
-              {columns.map((column) => (
-                <DropdownMenuCheckboxItem
-                  key={column.key}
-                  checked={column.visible}
-                  onCheckedChange={() => toggleColumnVisibility(column.key)}
-                >
-                  {column.label}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
         {/* En-têtes du tableau avec coins arrondis en haut et en bas */}
         <div className="sticky top-0 z-10">
           <div className="bg-[#62666c] rounded-full overflow-hidden">
@@ -286,7 +273,7 @@ const TenantsTable: React.FC = () => {
                   onMouseLeave={() => setHoveredRow(null)}
                 >
                   <div className="flex justify-center">
-                    {(hoveredRow === tenant.id || selectedTenants.includes(tenant.id)) && (
+                    {hoveredRow === tenant.id && (
                       <Checkbox
                         checked={selectedTenants.includes(tenant.id)}
                         onCheckedChange={() => toggleTenantSelection(tenant.id)}
@@ -381,53 +368,88 @@ const TenantsTable: React.FC = () => {
         </div>
 
         {/* Boutons d'action */}
-        <div className="p-4 border-t flex items-center justify-end space-x-4 bg-white rounded-b-lg">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button 
-                variant="outline"
-                className="shadow-sm flex items-center"
-              >
-                <Calendar className="mr-2 h-4 w-4" />
-                {formatMonthDate(date)}
-                <div className="ml-2 flex gap-1">
-                  <ChevronDown className="h-4 w-4 cursor-pointer" onClick={() => navigateMonth('prev')} />
-                  <ChevronUp className="h-4 w-4 cursor-pointer" onClick={() => navigateMonth('next')} />
-                </div>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <CalendarComponent
-                mode="single"
-                selected={date}
-                onSelect={(day) => day && setDate(startOfMonth(day))}
-                initialFocus
-                className="p-3 pointer-events-auto"
-              />
-            </PopoverContent>
-          </Popover>
+        <div className="p-4 border-t flex items-center justify-between space-x-4 bg-white rounded-b-lg">
+          {/* Boutons à gauche */}
+          <div className="flex space-x-4">
+            <Button 
+              variant="outline"
+              disabled={selectedTenants.length === 0}
+              className={`shadow-sm ${
+                selectedTenants.length > 0 
+                  ? 'bg-[#8f95a1] text-white hover:bg-[#d9592b]' 
+                  : 'bg-gray-300 text-gray-500'
+              }`}
+            >
+              <Pencil className="mr-2 h-4 w-4" /> Modifier
+            </Button>
+            
+            <Button 
+              variant="default" 
+              className="shadow-sm bg-[#8f95a1] text-white hover:bg-[#d9592b]"
+              onClick={() => setIsAddModalOpen(true)}
+            >
+              <Plus className="mr-2 h-4 w-4" /> Ajouter un locataire
+            </Button>
+          </div>
           
-          <div className="flex-grow"></div>
-          
-          <Button 
-            variant="outline"
-            disabled={selectedTenants.length === 0}
-            className={`shadow-sm ${
-              selectedTenants.length > 0 
-                ? 'bg-[#8f95a1] text-white hover:bg-[#d9592b]' 
-                : 'bg-gray-300 text-gray-500'
-            }`}
-          >
-            <Pencil className="mr-2 h-4 w-4" /> Modifier
-          </Button>
-          
-          <Button 
-            variant="default" 
-            className="shadow-sm bg-[#8f95a1] text-white hover:bg-[#d9592b]"
-            onClick={() => setIsAddModalOpen(true)}
-          >
-            <Plus className="mr-2 h-4 w-4" /> Ajouter un locataire
-          </Button>
+          {/* Boutons à droite */}
+          <div className="flex items-center space-x-4">
+            <Button 
+              variant="outline"
+              className="shadow-sm"
+              onClick={() => setIsExportModalOpen(true)}
+            >
+              <Printer className="mr-2 h-4 w-4" /> Imprimer
+            </Button>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="outline"
+                  className="flex items-center gap-2 shadow-sm"
+                >
+                  <Eye className="h-4 w-4" />
+                  Colonnes
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-white w-56">
+                {columns.map((column) => (
+                  <DropdownMenuCheckboxItem
+                    key={column.key}
+                    checked={column.visible}
+                    onCheckedChange={() => toggleColumnVisibility(column.key)}
+                  >
+                    {column.label}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button 
+                  variant="outline"
+                  className="shadow-sm flex items-center"
+                >
+                  <Calendar className="mr-2 h-4 w-4" />
+                  {formatMonthDate(date)}
+                  <div className="ml-2 flex gap-1">
+                    <ChevronDown className="h-4 w-4 cursor-pointer" onClick={() => navigateMonth('prev')} />
+                    <ChevronUp className="h-4 w-4 cursor-pointer" onClick={() => navigateMonth('next')} />
+                  </div>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <CalendarComponent
+                  mode="single"
+                  selected={date}
+                  onSelect={(day) => day && setDate(startOfMonth(day))}
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
       </div>
 
@@ -436,6 +458,13 @@ const TenantsTable: React.FC = () => {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSubmit={handleAddTenant}
+      />
+      
+      {/* Modal d'exportation */}
+      <ExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        onExport={handleExport}
       />
 
       {/* Toaster pour les notifications */}
