@@ -1,20 +1,35 @@
 
 import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronUp, ChevronDown, Plus, Pencil, Calendar } from 'lucide-react';
+import { ChevronUp, ChevronDown, Plus, Pencil, Calendar, Info, Eye, EyeOff } from 'lucide-react';
 import { useTenants } from '@/hooks/useTenants';
 import AddTenantModal from './AddTenantModal';
 import { Tenant } from '@/types/tenant';
 import { Toaster } from '@/components/ui/toaster';
 import { Checkbox } from '@/components/ui/checkbox';
-import { format } from 'date-fns';
+import { format, startOfMonth, addMonths, subMonths } from 'date-fns';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardContent } from '@/components/ui/card';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface SortConfig {
   key: keyof Tenant | null;
   direction: 'ascending' | 'descending';
+}
+
+// Interface pour les colonnes
+interface Column {
+  key: keyof Tenant | 'caution' | 'arrival_date' | 'updated_at'; // Extended keys
+  label: string;
+  visible: boolean;
+  sortable: boolean;
 }
 
 const TenantsTable: React.FC = () => {
@@ -29,6 +44,18 @@ const TenantsTable: React.FC = () => {
   const [date, setDate] = useState<Date>(new Date());
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<'all' | 'En règle' | 'Pas en règle'>('all');
+  
+  // Configuration des colonnes avec visibilité
+  const [columns, setColumns] = useState<Column[]>([
+    { key: 'name', label: 'Nom & Prénom', visible: true, sortable: true },
+    { key: 'status', label: 'Situation', visible: true, sortable: true },
+    { key: 'unpaid', label: 'Impayés', visible: true, sortable: true },
+    { key: 'observation', label: 'Observation', visible: true, sortable: true },
+    { key: 'location', label: 'Localisation', visible: true, sortable: true },
+    { key: 'caution', label: 'Caution', visible: false, sortable: true },
+    { key: 'arrival_date', label: "Date d'arrivée", visible: false, sortable: true },
+    { key: 'updated_at', label: 'Dernière modification', visible: false, sortable: true },
+  ]);
 
   // Calculer les statistiques
   const stats = useMemo(() => {
@@ -100,6 +127,24 @@ const TenantsTable: React.FC = () => {
       setSelectedStatus(status);
     }
   };
+  
+  // Toggle la visibilité des colonnes
+  const toggleColumnVisibility = (columnKey: Column['key']) => {
+    setColumns(prev => 
+      prev.map(col => 
+        col.key === columnKey ? { ...col, visible: !col.visible } : col
+      )
+    );
+  };
+
+  // Navigation par mois
+  const navigateMonth = (direction: 'prev' | 'next') => {
+    if (direction === 'prev') {
+      setDate(subMonths(date, 1));
+    } else {
+      setDate(addMonths(date, 1));
+    }
+  };
 
   // Filtrer les locataires par statut
   const filteredTenants = useMemo(() => {
@@ -114,6 +159,33 @@ const TenantsTable: React.FC = () => {
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('fr-FR').format(num);
   };
+
+  // Formater la date pour l'afficher par mois
+  const formatMonthDate = (date: Date) => {
+    return format(date, 'MMMM yyyy');
+  };
+
+  // Pour les colonnes additionnelles
+  const getCellValue = (tenant: Tenant, key: Column['key']) => {
+    switch (key) {
+      case 'caution':
+        return formatNumber(5000); // Valeur fictive pour la caution
+      case 'arrival_date':
+        return '01/06/2023'; // Date d'arrivée fictive
+      case 'updated_at':
+        return tenant.updated_at ? format(new Date(tenant.updated_at), 'dd/MM/yyyy HH:mm') : '-';
+      default:
+        if (key === 'unpaid') {
+          return formatNumber(tenant[key] as number);
+        }
+        return tenant[key as keyof Tenant] || '-';
+    }
+  };
+
+  // Les colonnes visibles
+  const visibleColumns = useMemo(() => {
+    return columns.filter(column => column.visible);
+  }, [columns]);
 
   return (
     <div className="h-full flex flex-col">
@@ -132,43 +204,57 @@ const TenantsTable: React.FC = () => {
 
       {/* Conteneur du tableau avec fond blanc */}
       <div className="flex-1 flex flex-col bg-white rounded-2xl shadow-sm overflow-hidden p-1.5">
+        {/* Options du tableau et bouton de colonnes */}
+        <div className="flex justify-end mb-2 px-4 pt-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Eye className="h-4 w-4" />
+                Colonnes
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-white w-56">
+              {columns.map((column) => (
+                <DropdownMenuCheckboxItem
+                  key={column.key}
+                  checked={column.visible}
+                  onCheckedChange={() => toggleColumnVisibility(column.key)}
+                >
+                  {column.label}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
         {/* En-têtes du tableau avec coins arrondis en haut et en bas */}
         <div className="sticky top-0 z-10">
           <div className="bg-[#62666c] rounded-full overflow-hidden">
             <div className="p-4">
-              <div className="grid grid-cols-[50px,200px,1fr,1fr,1.5fr,1fr] gap-4">
+              <div className={`grid gap-4`} 
+                style={{ 
+                  gridTemplateColumns: `50px ${visibleColumns.map(() => '1fr').join(' ')} 50px` 
+                }}
+              >
                 <div className="flex items-center justify-center font-medium text-white text-sm uppercase tracking-wider">
                   &nbsp;
                 </div>
-                <div 
-                  className="cursor-pointer flex items-center justify-center font-medium text-white text-sm uppercase tracking-wider" 
-                  onClick={() => sortData('name')}
-                >
-                  Nom & Prénom {getSortIcon('name')}
-                </div>
-                <div 
-                  className="cursor-pointer flex items-center justify-center font-medium text-white text-sm uppercase tracking-wider" 
-                  onClick={() => sortData('status')}
-                >
-                  Situation {getSortIcon('status')}
-                </div>
-                <div 
-                  className="cursor-pointer flex items-center justify-center font-medium text-white text-sm uppercase tracking-wider" 
-                  onClick={() => sortData('unpaid')}
-                >
-                  Impayés {getSortIcon('unpaid')}
-                </div>
-                <div 
-                  className="cursor-pointer flex items-center justify-center font-medium text-white text-sm uppercase tracking-wider" 
-                  onClick={() => sortData('observation')}
-                >
-                  Observation {getSortIcon('observation')}
-                </div>
-                <div 
-                  className="cursor-pointer flex items-center justify-center font-medium text-white text-sm uppercase tracking-wider" 
-                  onClick={() => sortData('location')}
-                >
-                  Localisation {getSortIcon('location')}
+                
+                {visibleColumns.map((column) => (
+                  <div 
+                    key={column.key}
+                    className={`cursor-pointer flex items-center justify-center font-medium text-white text-sm uppercase tracking-wider ${column.sortable ? 'cursor-pointer' : ''}`}
+                    onClick={() => column.sortable && sortData(column.key as keyof Tenant)}
+                  >
+                    {column.label} {column.sortable && getSortIcon(column.key as keyof Tenant)}
+                  </div>
+                ))}
+
+                <div className="flex items-center justify-center font-medium text-white text-sm uppercase tracking-wider">
+                  &nbsp;
                 </div>
               </div>
             </div>
@@ -190,9 +276,12 @@ const TenantsTable: React.FC = () => {
               {filteredTenants.map((tenant, index) => (
                 <div 
                   key={tenant.id} 
-                  className={`grid grid-cols-[50px,200px,1fr,1fr,1.5fr,1fr] items-center ${
+                  className={`grid items-center ${
                     index % 2 === 0 ? 'bg-white' : 'bg-[#f7f8f7]'
                   } hover:bg-gray-100 rounded-full p-4`}
+                  style={{ 
+                    gridTemplateColumns: `50px ${visibleColumns.map(() => '1fr').join(' ')} 50px` 
+                  }}
                   onMouseEnter={() => setHoveredRow(tenant.id)}
                   onMouseLeave={() => setHoveredRow(null)}
                 >
@@ -205,15 +294,47 @@ const TenantsTable: React.FC = () => {
                       />
                     )}
                   </div>
-                  <div className="text-[#62666c] text-center">{tenant.name}</div>
-                  <div className="text-center">
-                    <span className={tenant.status === 'En règle' ? 'text-green-500' : 'text-red-500'}>
-                      {tenant.status}
-                    </span>
+                  
+                  {visibleColumns.map((column) => (
+                    <div key={`${tenant.id}-${column.key}`} className="text-[#62666c] text-center truncate">
+                      {getCellValue(tenant, column.key)}
+                    </div>
+                  ))}
+                  
+                  <div className="flex justify-center">
+                    {hoveredRow === tenant.id && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <Info className="h-4 w-4 text-[#62666c]" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-white p-4 border shadow-lg rounded-md">
+                            <div className="space-y-2 w-64">
+                              <h3 className="font-bold">Détails du locataire</h3>
+                              <div className="grid grid-cols-2 gap-2">
+                                <span className="text-sm font-medium">Nom:</span>
+                                <span className="text-sm">{tenant.name}</span>
+                                
+                                <span className="text-sm font-medium">Statut:</span>
+                                <span className="text-sm">{tenant.status}</span>
+                                
+                                <span className="text-sm font-medium">Impayés:</span>
+                                <span className="text-sm">{formatNumber(tenant.unpaid)}</span>
+                                
+                                <span className="text-sm font-medium">Location:</span>
+                                <span className="text-sm">{tenant.location}</span>
+                                
+                                <span className="text-sm font-medium">Observation:</span>
+                                <span className="text-sm">{tenant.observation || 'Aucune'}</span>
+                              </div>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
                   </div>
-                  <div className="text-[#62666c] text-center">{formatNumber(tenant.unpaid)}</div>
-                  <div className="text-[#62666c] truncate text-center">{tenant.observation}</div>
-                  <div className="text-[#62666c] text-center">{tenant.location}</div>
                 </div>
               ))}
             </div>
@@ -268,14 +389,18 @@ const TenantsTable: React.FC = () => {
                 className="shadow-sm flex items-center"
               >
                 <Calendar className="mr-2 h-4 w-4" />
-                {format(date, 'dd/MM/yyyy')}
+                {formatMonthDate(date)}
+                <div className="ml-2 flex gap-1">
+                  <ChevronDown className="h-4 w-4 cursor-pointer" onClick={() => navigateMonth('prev')} />
+                  <ChevronUp className="h-4 w-4 cursor-pointer" onClick={() => navigateMonth('next')} />
+                </div>
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
               <CalendarComponent
                 mode="single"
                 selected={date}
-                onSelect={(day) => day && setDate(day)}
+                onSelect={(day) => day && setDate(startOfMonth(day))}
                 initialFocus
                 className="p-3 pointer-events-auto"
               />

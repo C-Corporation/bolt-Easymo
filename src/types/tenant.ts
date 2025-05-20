@@ -6,6 +6,8 @@ export interface Tenant {
   unpaid: number;
   observation: string;
   location: string;
+  caution?: number;
+  arrival_date?: string;
   created_at?: string;
   updated_at?: string;
 }
