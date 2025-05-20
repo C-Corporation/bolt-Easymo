@@ -4,11 +4,13 @@ import { ChevronUp, ChevronDown, Plus, Pencil, Calendar, Info, Eye, Printer } fr
 import { useTenants } from '@/hooks/useTenants';
 import AddTenantModal from './AddTenantModal';
 import ExportModal from './ExportModal';
+import TenantDetailModal from './TenantDetailModal';
 import { Tenant } from '@/types/tenant';
 import { Toaster } from '@/components/ui/toaster';
 import { toast } from '@/components/ui/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
 import { format, startOfMonth, addMonths, subMonths } from 'date-fns';
+import { fr } from 'date-fns/locale';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardContent } from '@/components/ui/card';
@@ -58,6 +60,8 @@ const TenantsTable: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<'all' | 'En règle' | 'Pas en règle'>('all');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentEditIndex, setCurrentEditIndex] = useState(0);
+  const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   
   // Configuration des colonnes avec visibilité
   const [columns, setColumns] = useState<Column[]>([
@@ -133,6 +137,12 @@ const TenantsTable: React.FC = () => {
     });
   };
 
+  // Afficher les détails d'un locataire
+  const showTenantDetails = (tenant: Tenant) => {
+    setSelectedTenant(tenant);
+    setIsDetailModalOpen(true);
+  };
+
   // Commencer la modification des locataires sélectionnés
   const startEditing = () => {
     if (selectedTenants.length > 0) {
@@ -195,16 +205,16 @@ const TenantsTable: React.FC = () => {
 
   // Formater la date pour l'afficher par mois
   const formatMonthDate = (date: Date) => {
-    return format(date, 'MMMM yyyy');
+    return format(date, 'MMMM yyyy', { locale: fr });
   };
 
   // Pour les colonnes additionnelles
   const getCellValue = (tenant: Tenant, key: Column['key']) => {
     switch (key) {
       case 'caution':
-        return formatNumber(5000); // Valeur fictive pour la caution
+        return formatNumber(tenant.caution || 5000); // Valeur fictive ou réelle
       case 'arrival_date':
-        return '01/06/2023'; // Date d'arrivée fictive
+        return tenant.arrival_date || '01/06/2023'; // Date d'arrivée
       case 'updated_at':
         return tenant.updated_at ? format(new Date(tenant.updated_at), 'dd/MM/yyyy HH:mm') : '-';
       default:
@@ -347,13 +357,14 @@ const TenantsTable: React.FC = () => {
                   onMouseLeave={() => setHoveredRow(null)}
                 >
                   <div className="flex justify-center">
-                    {hoveredRow === tenant.id || selectedTenants.includes(tenant.id) ? (
-                      <Checkbox
-                        checked={selectedTenants.includes(tenant.id)}
-                        onCheckedChange={() => toggleTenantSelection(tenant.id)}
-                        className="data-[state=checked]:bg-[#8f95a1] data-[state=checked]:text-primary-foreground"
-                      />
-                    ) : null}
+                    {/* Toujours afficher la case à cocher si elle est sélectionnée */}
+                    <Checkbox
+                      checked={selectedTenants.includes(tenant.id)}
+                      onCheckedChange={() => toggleTenantSelection(tenant.id)}
+                      className={`data-[state=checked]:bg-[#8f95a1] data-[state=checked]:text-primary-foreground ${
+                        selectedTenants.includes(tenant.id) || hoveredRow === tenant.id ? 'visible' : 'invisible'
+                      }`}
+                    />
                   </div>
                   
                   {visibleColumns.map((column) => (
@@ -368,34 +379,21 @@ const TenantsTable: React.FC = () => {
                   ))}
                   
                   <div className="flex justify-center">
-                    {hoveredRow === tenant.id && (
+                    {(hoveredRow === tenant.id || selectedTenants.includes(tenant.id)) && (
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8"
+                              onClick={() => showTenantDetails(tenant)}
+                            >
                               <Info className="h-4 w-4 text-[#62666c]" />
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent className="bg-white p-4 border shadow-lg rounded-md">
-                            <div className="space-y-2 w-64">
-                              <h3 className="font-bold">Détails du locataire</h3>
-                              <div className="grid grid-cols-2 gap-2">
-                                <span className="text-sm font-medium">Nom:</span>
-                                <span className="text-sm">{tenant.name}</span>
-                                
-                                <span className="text-sm font-medium">Statut:</span>
-                                <span className="text-sm">{tenant.status}</span>
-                                
-                                <span className="text-sm font-medium">Impayés:</span>
-                                <span className="text-sm">{formatNumber(tenant.unpaid)}</span>
-                                
-                                <span className="text-sm font-medium">Location:</span>
-                                <span className="text-sm">{tenant.location}</span>
-                                
-                                <span className="text-sm font-medium">Observation:</span>
-                                <span className="text-sm">{tenant.observation || 'Aucune'}</span>
-                              </div>
-                            </div>
+                          <TooltipContent className="bg-white p-2 shadow-lg rounded-md">
+                            Voir les détails
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -513,10 +511,6 @@ const TenantsTable: React.FC = () => {
                 >
                   <Calendar className="mr-2 h-4 w-4" />
                   {formatMonthDate(date)}
-                  <div className="ml-2 flex gap-1">
-                    <ChevronDown className="h-4 w-4 cursor-pointer" onClick={() => navigateMonth('prev')} />
-                    <ChevronUp className="h-4 w-4 cursor-pointer" onClick={() => navigateMonth('next')} />
-                  </div>
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="end">
@@ -526,6 +520,14 @@ const TenantsTable: React.FC = () => {
                   onSelect={(day) => day && setDate(startOfMonth(day))}
                   initialFocus
                   className="p-3 pointer-events-auto"
+                  captionLayout="dropdown-buttons"
+                  fromMonth={new Date(2020, 0)}
+                  toMonth={new Date(2030, 11)}
+                  showOutsideDays={false}
+                  fixedWeeks
+                  formatters={{
+                    formatCaption: (date) => format(date, 'MMMM yyyy', { locale: fr })
+                  }}
                 />
               </PopoverContent>
             </Popover>
@@ -545,6 +547,13 @@ const TenantsTable: React.FC = () => {
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
         onExport={handleExport}
+      />
+      
+      {/* Modal de détails du locataire */}
+      <TenantDetailModal 
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        tenant={selectedTenant}
       />
 
       {/* Toaster pour les notifications */}
