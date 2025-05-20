@@ -2,7 +2,7 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { FileText, FileExcel, FilePdf } from 'lucide-react';
+import { FileDown, FileSpreadsheet } from 'lucide-react';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -26,14 +26,14 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onExport }) 
               onClick={() => onExport('pdf')}
               className="flex-1 gap-2 bg-[#8f95a1] hover:bg-[#d9592b] text-white"
             >
-              <FilePdf />
+              <FileDown />
               PDF
             </Button>
             <Button
               onClick={() => onExport('excel')}
               className="flex-1 gap-2 bg-[#8f95a1] hover:bg-[#d9592b] text-white"
             >
-              <FileExcel />
+              <FileSpreadsheet />
               Excel
             </Button>
           </div>
