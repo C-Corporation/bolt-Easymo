@@ -21,7 +21,14 @@ import {
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
+
+// Extend the jsPDF type to include autoTable
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: any) => jsPDF;
+  }
+}
 
 interface SortConfig {
   key: keyof Tenant | null;
@@ -220,7 +227,7 @@ const TenantsTable: React.FC = () => {
       );
       
       doc.text('Liste des locataires', 14, 16);
-      (doc as any).autoTable({
+      doc.autoTable({
         head: [visibleColumnLabels],
         body: tableData,
         startY: 20,
