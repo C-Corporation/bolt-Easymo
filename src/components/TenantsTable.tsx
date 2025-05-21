@@ -42,7 +42,7 @@ interface SortConfig {
 
 // Interface pour les colonnes
 interface Column {
-  key: keyof Tenant | 'caution' | 'arrival_date' | 'updated_at'; // Extended keys
+  key: keyof Tenant | 'caution' | 'arrival_date' | 'updated_at' | 'cautionMonths'; // Ajout de cautionMonths
   label: string;
   visible: boolean;
   sortable: boolean;
@@ -67,7 +67,7 @@ const TenantsTable: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isMultipleEditModalOpen, setIsMultipleEditModalOpen] = useState(false);
   
-  // Configuration des colonnes avec visibilité
+  // Configuration des colonnes avec visibilité (ajout de la colonne Mois de Caution)
   const [columns, setColumns] = useState<Column[]>([
     { key: 'name', label: 'Nom & Prénom', visible: true, sortable: true },
     { key: 'status', label: 'Situation', visible: true, sortable: true },
@@ -75,6 +75,7 @@ const TenantsTable: React.FC = () => {
     { key: 'observation', label: 'Observation', visible: true, sortable: true },
     { key: 'location', label: 'Localisation', visible: true, sortable: true },
     { key: 'caution', label: 'Caution', visible: false, sortable: true },
+    { key: 'cautionMonths', label: 'Mois de Caution', visible: false, sortable: true }, // Nouvelle colonne
     { key: 'arrival_date', label: "Date d'arrivée", visible: false, sortable: true },
     { key: 'updated_at', label: 'Dernière modification', visible: false, sortable: true },
   ]);
@@ -211,6 +212,8 @@ const TenantsTable: React.FC = () => {
     switch (key) {
       case 'caution':
         return formatNumber(tenant.caution || 0);
+      case 'cautionMonths':
+        return tenant.cautionMonths || 1;
       case 'arrival_date':
         return tenant.arrival_date ? format(new Date(tenant.arrival_date), 'dd/MM/yyyy') : '-';
       case 'updated_at':
@@ -254,14 +257,13 @@ const TenantsTable: React.FC = () => {
         },
       });
 
-      // Ajout des sous-totaux au PDF
-      const finalY = (doc as any).previousAutoTable?.finalY || 20;
-      const startY = finalY + 10;
+      // Ajout des sous-totaux au PDF après le tableau
+      const finalY = doc.autoTable.previous?.finalY || 20;
       doc.setFontSize(10);
-      doc.text('Récapitulatif', 14, startY);
+      doc.text('Récapitulatif', 14, finalY + 10);
       
       doc.autoTable({
-        startY: startY + 5,
+        startY: finalY + 15,
         body: [
           ['Nombre de locataires', stats.total.toString()],
           ['En règle', stats.inOrder.toString()],
@@ -351,8 +353,8 @@ const TenantsTable: React.FC = () => {
               variant={isCurrentMonth ? "default" : "outline"}
               size="sm"
               className={`text-sm ${isCurrentMonth 
-                ? 'bg-[#8f95a1] text-white hover:bg-[#e84a33] hover:text-white' 
-                : 'text-[#2a2f36] hover:bg-[#e84a33] hover:text-white'}`}
+                ? 'bg-[#8f95a1] text-[#2a2f36] hover:bg-[#e84a33] hover:text-white' 
+                : 'text-[#2a2f36] bg-[#e7e9ec] hover:bg-[#e84a33] hover:text-white'}`}
               onClick={() => handleMonthSelect(monthDate)}
             >
               {format(monthDate, 'MMM', { locale: fr })}
@@ -366,7 +368,7 @@ const TenantsTable: React.FC = () => {
           variant="outline"
           size="sm" 
           onClick={() => setDate(new Date(date.getFullYear() - 1, date.getMonth(), 1))}
-          className="text-[#2a2f36] hover:bg-[#e84a33] hover:text-white"
+          className="text-[#2a2f36] bg-[#e7e9ec] hover:bg-[#e84a33] hover:text-white"
         >
           {date.getFullYear() - 1}
         </Button>
@@ -375,7 +377,7 @@ const TenantsTable: React.FC = () => {
           variant="outline" 
           size="sm"
           onClick={() => setDate(new Date(date.getFullYear() + 1, date.getMonth(), 1))}
-          className="text-[#2a2f36] hover:bg-[#e84a33] hover:text-white"
+          className="text-[#2a2f36] bg-[#e7e9ec] hover:bg-[#e84a33] hover:text-white"
         >
           {date.getFullYear() + 1}
         </Button>
@@ -456,13 +458,11 @@ const TenantsTable: React.FC = () => {
                   onMouseLeave={() => setHoveredRow(null)}
                 >
                   <div className="flex justify-center">
-                    {/* Checkboxes toujours visibles quand cochées */}
+                    {/* Checkboxes toujours visibles */}
                     <Checkbox
                       checked={selectedTenants.includes(tenant.id)}
                       onCheckedChange={() => toggleTenantSelection(tenant.id)}
-                      className={`data-[state=checked]:bg-[#8f95a1] data-[state=checked]:text-primary-foreground ${
-                        selectedTenants.includes(tenant.id) || hoveredRow === tenant.id ? 'visible' : 'invisible hover:visible'
-                      }`}
+                      className="data-[state=checked]:bg-[#8f95a1] data-[state=checked]:text-primary-foreground"
                     />
                   </div>
                   
@@ -553,7 +553,7 @@ const TenantsTable: React.FC = () => {
               className={`shadow-sm ${
                 selectedTenants.length > 0
                   ? 'bg-[#8f95a1] text-white hover:bg-[#e84a33]' 
-                  : 'bg-gray-300 text-gray-500'
+                  : 'bg-[#e7e9ec] text-[#b4bfd1]'
               }`}
               onClick={handleEdit}
             >
@@ -623,7 +623,7 @@ const TenantsTable: React.FC = () => {
                   {formatMonthDate(date)}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="end">
+              <PopoverContent className="w-auto p-0 bg-white" align="end">
                 <MonthPicker />
               </PopoverContent>
             </Popover>

@@ -12,16 +12,10 @@ import { supabase } from '@/integrations/supabase/client';
 import TenantForm from './TenantForm';
 
 const formSchema = z.object({
-  name: z.string().min(2, { message: 'Le nom doit contenir au moins 2 caractères.' }),
-  firstName: z.string().min(1, { message: 'Le prénom est requis.' }),
-  secondName: z.string().optional(),
-  gender: z.enum(['Homme', 'Femme', 'Autre']),
-  birthDate: z.string().optional(),
-  phoneNumber: z.string().min(8, { message: 'Le numéro de téléphone doit être valide.' }),
   status: z.enum(['En règle', 'Pas en règle']),
   unpaid: z.number().nonnegative({ message: "Le montant impayé ne peut pas être négatif" }),
   location: z.string().min(3, { message: 'La localisation doit être spécifiée.' }),
-  propertyType: z.string().min(1, { message: 'Le type de bien est requis.' }),
+  propertyType: z.string().optional(),
   observation: z.string().optional(),
   rent: z.number().positive({ message: "Le loyer doit être positif" }),
   caution: z.number().optional(),
@@ -41,12 +35,6 @@ const TenantEditModal: React.FC<TenantEditModalProps> = ({ isOpen, onClose, tena
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: tenant?.name || '',
-      firstName: tenant?.firstName || '',
-      secondName: tenant?.secondName || '',
-      gender: tenant?.gender || 'Homme',
-      birthDate: tenant?.birthDate || '',
-      phoneNumber: tenant?.phoneNumber || '',
       status: tenant?.status || 'En règle',
       unpaid: tenant?.unpaid || 0,
       location: tenant?.location || '',
@@ -61,12 +49,6 @@ const TenantEditModal: React.FC<TenantEditModalProps> = ({ isOpen, onClose, tena
   React.useEffect(() => {
     if (tenant && isOpen) {
       form.reset({
-        name: tenant.name || '',
-        firstName: tenant.firstName || '',
-        secondName: tenant.secondName || '',
-        gender: tenant.gender || 'Homme',
-        birthDate: tenant.birthDate || '',
-        phoneNumber: tenant.phoneNumber || '',
         status: tenant.status || 'En règle',
         unpaid: tenant.unpaid || 0,
         location: tenant.location || '',
@@ -87,12 +69,6 @@ const TenantEditModal: React.FC<TenantEditModalProps> = ({ isOpen, onClose, tena
       const { error } = await supabase
         .from('tenants')
         .update({
-          name: data.name,
-          firstName: data.firstName,
-          secondName: data.secondName,
-          gender: data.gender,
-          birthDate: data.birthDate,
-          phoneNumber: data.phoneNumber,
           status: data.status,
           unpaid: data.unpaid,
           location: data.location,
@@ -130,15 +106,24 @@ const TenantEditModal: React.FC<TenantEditModalProps> = ({ isOpen, onClose, tena
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-white text-gray-800">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-white text-gray-800">
         <DialogHeader>
-          <DialogTitle className="text-gray-900">Modifier le locataire</DialogTitle>
+          <DialogTitle className="text-gray-900 flex justify-between items-center">
+            <span>Modifier le locataire</span>
+          </DialogTitle>
         </DialogHeader>
+        
+        {/* Information sur le locataire actuel */}
+        <div className="bg-blue-50 p-3 rounded-md mb-4 text-center">
+          <p className="font-medium text-blue-800">
+            Modification de: <span className="font-bold">{tenant.name} {tenant.firstName}</span>
+          </p>
+        </div>
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-2">
-            {/* Composant formulaire réutilisable */}
-            <TenantForm form={form} />
+            {/* Composant formulaire réutilisable avec version simplifiée */}
+            <TenantForm form={form} simplified={true} />
 
             <DialogFooter className="pt-2">
               <Button

@@ -13,7 +13,6 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     { label: 'Locataires', path: '/locataires', active: true },
     { label: 'Immobiliers', path: '/immobiliers', active: false },
     { label: 'Finances', path: '/finances', active: false },
-    { label: 'Intervention', path: '/intervention', active: false },
     { label: 'Documents', path: '/documents', active: false },
     { label: 'Paramètres', path: '/parametres', active: false },
     { label: 'Déconnexion', path: '/logout', active: false },
@@ -21,10 +20,10 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
 
   return (
     <div className={cn("flex flex-col h-[calc(100vh-40px)] bg-[#5D6169] w-56 text-white rounded-lg shadow-lg overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100", className)}>
-      {/* Logo Section */}
-      <div className="p-4 flex items-center justify-center">
-        <div className="w-24 h-16 flex-shrink-0 overflow-hidden">
-          <img src="/lovable-uploads/a3049965-2d32-42c6-9ecf-d1ebc4889153.png" alt="Logo" className="w-full h-full object-contain" />
+      {/* Logo Section - Hauteur réduite */}
+      <div className="p-3 flex items-center justify-center">
+        <div className="w-24 h-12 flex-shrink-0 overflow-hidden">
+          <img src="/lovable-uploads/11042e08-27b3-49e5-bbb7-e66c8b1d59d0.png" alt="Easymo Logo" className="w-full h-full object-contain" />
         </div>
       </div>
       
