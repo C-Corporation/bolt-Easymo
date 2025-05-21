@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronUp, ChevronDown, Plus, Pencil, Calendar, Info, Eye, Printer, Import } from 'lucide-react';
@@ -8,6 +7,7 @@ import ExportModal from './ExportModal';
 import ImportModal from './ImportModal';
 import TenantDetailModal from './TenantDetailModal';
 import TenantEditModal from './TenantEditModal';
+import MultipleTenantEditModal from './MultipleTenantEditModal';
 import { Tenant } from '@/types/tenant';
 import { Toaster } from '@/components/ui/toaster';
 import { toast } from '@/components/ui/use-toast';
@@ -65,6 +65,7 @@ const TenantsTable: React.FC = () => {
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isMultipleEditModalOpen, setIsMultipleEditModalOpen] = useState(false);
   
   // Configuration des colonnes avec visibilité
   const [columns, setColumns] = useState<Column[]>([
@@ -148,12 +149,14 @@ const TenantsTable: React.FC = () => {
 
   // Commencer la modification du locataire sélectionné
   const handleEdit = () => {
-    if (selectedTenants.length > 0) {
+    if (selectedTenants.length === 1) {
       const tenantToEdit = tenants.find(tenant => tenant.id === selectedTenants[0]);
       if (tenantToEdit) {
         setSelectedTenant(tenantToEdit);
         setIsEditModalOpen(true);
       }
+    } else if (selectedTenants.length > 1) {
+      setIsMultipleEditModalOpen(true);
     }
   };
 
@@ -252,7 +255,7 @@ const TenantsTable: React.FC = () => {
       });
 
       // Ajout des sous-totaux au PDF
-      let finalY = doc.autoTable.lastAutoTable ? doc.autoTable.lastAutoTable.finalY : 20;
+      const finalY = (doc as any).previousAutoTable?.finalY || 20;
       const startY = finalY + 10;
       doc.setFontSize(10);
       doc.text('Récapitulatif', 14, startY);
@@ -281,6 +284,7 @@ const TenantsTable: React.FC = () => {
         description: 'Le document a été généré avec succès',
       });
     } else if (format === 'excel') {
+      // Pour l'Excel, on exporte uniquement les données du tableau sans les sous-totaux
       const worksheet = XLSX.utils.aoa_to_sheet([
         visibleColumnLabels,
         ...filteredTenants.map(tenant => 
@@ -448,11 +452,13 @@ const TenantsTable: React.FC = () => {
                   onMouseLeave={() => setHoveredRow(null)}
                 >
                   <div className="flex justify-center">
-                    {/* Checkboxes toujours visibles */}
+                    {/* Checkboxes toujours visibles quand cochées */}
                     <Checkbox
                       checked={selectedTenants.includes(tenant.id)}
                       onCheckedChange={() => toggleTenantSelection(tenant.id)}
-                      className="data-[state=checked]:bg-[#8f95a1] data-[state=checked]:text-primary-foreground"
+                      className={`data-[state=checked]:bg-[#8f95a1] data-[state=checked]:text-primary-foreground ${
+                        selectedTenants.includes(tenant.id) || hoveredRow === tenant.id ? 'visible' : 'invisible hover:visible'
+                      }`}
                     />
                   </div>
                   
@@ -539,15 +545,18 @@ const TenantsTable: React.FC = () => {
           <div className="flex space-x-4">
             <Button 
               variant="outline"
-              disabled={selectedTenants.length !== 1}
+              disabled={selectedTenants.length === 0}
               className={`shadow-sm ${
-                selectedTenants.length === 1 
+                selectedTenants.length > 0
                   ? 'bg-[#8f95a1] text-white hover:bg-[#d9592b]' 
                   : 'bg-gray-300 text-gray-500'
               }`}
               onClick={handleEdit}
             >
-              <Pencil className="mr-2 h-4 w-4" /> Modifier
+              <Pencil className="mr-2 h-4 w-4" /> 
+              {selectedTenants.length > 1 
+                ? `Modifier (${selectedTenants.length})` 
+                : 'Modifier'}
             </Button>
             
             <Button 
@@ -559,7 +568,7 @@ const TenantsTable: React.FC = () => {
             </Button>
           </div>
           
-          {/* Boutons à droite */}
+          {/* Boutons à droite - Ordre modifié: Importer avant Imprimer */}
           <div className="flex items-center space-x-4">
             <Button 
               variant="outline"
@@ -625,7 +634,7 @@ const TenantsTable: React.FC = () => {
         onSubmit={handleAddTenant}
       />
       
-      {/* Modal d'importation */}
+      {/* Modal d'importation - Avec info format */}
       <ImportModal
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
@@ -646,12 +655,23 @@ const TenantsTable: React.FC = () => {
         tenant={selectedTenant}
       />
 
-      {/* Modal d'édition du locataire */}
+      {/* Modal d'édition d'un seul locataire */}
       <TenantEditModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         tenant={selectedTenant}
         onEditSuccess={fetchTenants}
+      />
+      
+      {/* Modal d'édition multiple pour plusieurs locataires */}
+      <MultipleTenantEditModal
+        isOpen={isMultipleEditModalOpen}
+        onClose={() => setIsMultipleEditModalOpen(false)}
+        tenantIds={selectedTenants}
+        onEditSuccess={() => {
+          fetchTenants();
+          setSelectedTenants([]);
+        }}
       />
 
       {/* Toaster pour les notifications */}

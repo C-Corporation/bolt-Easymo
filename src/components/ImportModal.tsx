@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
-import { Import, FileSpreadsheet, AlertCircle } from 'lucide-react';
+import { Import, FileSpreadsheet, AlertCircle, Info } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { supabase } from '@/integrations/supabase/client';
 import { Tenant } from '@/types/tenant';
@@ -154,10 +155,31 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImportSucc
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Importer des locataires</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <FileSpreadsheet className="h-5 w-5" /> 
+            Importer des locataires
+          </DialogTitle>
         </DialogHeader>
 
         <div className="py-4">
+          {/* Informations sur le format du fichier */}
+          <Alert className="mb-4 bg-blue-50">
+            <Info className="h-4 w-4 text-blue-500" />
+            <AlertTitle className="text-blue-700">Format du fichier</AlertTitle>
+            <AlertDescription className="text-sm">
+              <p className="mb-1">Le fichier Excel doit contenir au minimum les colonnes suivantes:</p>
+              <ul className="list-disc pl-5 text-xs space-y-1">
+                <li><strong>name</strong>: Nom du locataire (obligatoire)</li>
+                <li><strong>status</strong>: Situation: "En règle" ou "Pas en règle" (obligatoire)</li>
+                <li><strong>location</strong>: Adresse du bien (obligatoire)</li>
+                <li><strong>firstName</strong>: Prénom du locataire</li>
+                <li><strong>unpaid</strong>: Montant des impayés</li>
+                <li><strong>observation</strong>: Notes sur le locataire</li>
+                <li><strong>rent</strong>: Loyer mensuel</li>
+              </ul>
+            </AlertDescription>
+          </Alert>
+
           {error && (
             <Alert variant="destructive" className="mb-4">
               <AlertCircle className="h-4 w-4" />
@@ -233,7 +255,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImportSucc
                   </table>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  Colonnes requises: nom, statut, localisation. Les données incorrectes seront ignorées.
+                  Colonnes requises: name, status, location. Les données incorrectes seront ignorées.
                 </p>
               </div>
             )}
