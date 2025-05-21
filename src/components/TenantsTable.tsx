@@ -588,25 +588,25 @@ const TenantsTable: React.FC = () => {
           <div className="flex items-center space-x-4">
             <Button 
               variant="outline"
-              className="shadow-sm bg-[#5d6169] text-white hover:bg-[#e84a33]"
+              className="flex items-center gap-2 shadow-sm bg-[#5d6169] text-white hover:bg-[#e84a33] hover:text-white"
               onClick={() => setIsExportModalOpen(true)}
             >
-              <Printer className="mr-2 h-4 w-4" /> Imprimer
+              <Printer className="h-4 w-4" /> Imprimer
             </Button>
             
             <Button 
-              variant="outline"
-              className="shadow-sm bg-[#5d6169] text-white hover:bg-[#e84a33]"
+              variant="outline" 
+              className="flex items-center gap-2 shadow-sm bg-[#5d6169] text-white hover:bg-[#e84a33] hover:text-white"
               onClick={() => setIsImportModalOpen(true)}
             >
-              <Import className="mr-2 h-4 w-4" /> Importer
+              <Import className="h-4 w-4" /> Importer
             </Button>
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button 
                   variant="outline"
-                  className="flex items-center gap-2 shadow-sm bg-[#5d6169] text-white hover:bg-[#e84a33]"
+                  className="flex items-center gap-2 shadow-sm bg-[#5d6169] text-white hover:bg-[#e84a33] hover:text-white"
                 >
                   <Eye className="h-4 w-4" />
                   Colonnes
@@ -629,7 +629,7 @@ const TenantsTable: React.FC = () => {
               <PopoverTrigger asChild>
                 <Button 
                   variant="outline"
-                  className="shadow-sm bg-[#5d6169] text-white hover:bg-[#e84a33] flex items-center"
+                  className="shadow-sm bg-[#5d6169] text-white hover:bg-[#e84a33] hover:text-white flex items-center"
                 >
                   <Calendar className="mr-2 h-4 w-4" />
                   {formatMonthDate(date)}

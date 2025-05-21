@@ -1,8 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Table, User } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface SidebarProps {
   className?: string;
@@ -17,33 +18,67 @@ interface MenuItem {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ className }) => {
+  const location = useLocation();
+  const [showSubMenu, setShowSubMenu] = useState(false);
+  
   const [menuItems, setMenuItems] = useState<MenuItem[]>([
-    { label: 'Vue globale', path: '/', active: false },
-    { label: 'Locataires', path: '/locataires', active: true, subMenu: false },
-    { label: 'Immobiliers', path: '/immobiliers', active: false },
-    { label: 'Finances', path: '/finances', active: false },
-    { label: 'Documents', path: '/documents', active: false },
-    { label: 'Paramètres', path: '/parametres', active: false },
-    { label: 'Déconnexion', path: '/logout', active: false },
+    { label: 'Vue globale', path: '/', active: location.pathname === '/', subMenu: false },
+    { 
+      label: 'Locataires', 
+      path: '/locataires', 
+      active: location.pathname.startsWith('/locataires'), 
+      subMenu: location.pathname.startsWith('/locataires') 
+    },
+    { label: 'Immobiliers', path: '/immobiliers', active: location.pathname === '/immobiliers', subMenu: false },
+    { label: 'Finances', path: '/finances', active: location.pathname === '/finances', subMenu: false },
+    { label: 'Documents', path: '/documents', active: location.pathname === '/documents', subMenu: false },
+    { label: 'Paramètres', path: '/parametres', active: location.pathname === '/parametres', subMenu: false },
+    { label: 'Déconnexion', path: '/logout', active: false, subMenu: false },
   ]);
 
-  const [showSubMenu, setShowSubMenu] = useState(false);
+  // Mettre à jour l'état actif des éléments du menu
+  useEffect(() => {
+    setMenuItems(prev => prev.map(item => ({
+      ...item,
+      active: item.path === '/' 
+        ? location.pathname === '/' 
+        : item.path === '/locataires' 
+          ? location.pathname.startsWith('/locataires')
+          : location.pathname === item.path,
+      subMenu: item.label === 'Locataires' 
+        ? location.pathname.startsWith('/locataires')
+        : item.subMenu
+    })));
+    
+    setShowSubMenu(location.pathname.startsWith('/locataires'));
+  }, [location.pathname]);
 
   const toggleSubMenu = () => {
-    setShowSubMenu(!showSubMenu);
+    const newState = !showSubMenu;
+    setShowSubMenu(newState);
     
     // Update menu items state to reflect the collapsed state
     setMenuItems(prev => prev.map(item => 
       item.label === 'Locataires' 
-        ? { ...item, subMenu: !item.subMenu } 
+        ? { ...item, subMenu: newState } 
         : item
     ));
   };
 
   // Sous-menu pour les locataires
   const tenantSubMenuItems = [
-    { label: '', path: '/locataires/profils', icon: <User className="w-5 h-5" /> },
-    { label: '', path: '/locataires/tableau', icon: <Table className="w-5 h-5" /> }
+    { 
+      label: '', 
+      path: '/locataires/profils', 
+      icon: <User className="w-5 h-5" />,
+      isActive: location.pathname === '/locataires/profils'
+    },
+    { 
+      label: '', 
+      path: '/locataires/tableau', 
+      icon: <Table className="w-5 h-5" />,
+      isActive: location.pathname === '/locataires/tableau'
+    }
   ];
 
   return (
@@ -51,7 +86,11 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       {/* Logo Section - Hauteur ajustée */}
       <div className="p-3 flex items-center justify-center">
         <div className="w-32 h-20 flex-shrink-0 overflow-hidden">
-          <img src="/lovable-uploads/c06a4b99-8535-4448-a4c6-de77d817eb95.png" alt="Easymo Logo" className="w-full h-full object-contain" />
+          <img 
+            src="/images/Logo Sidemenu Easymo Complet TR v1.3 x1.png" 
+            alt="Easymo Logo" 
+            className="w-full h-full object-contain transition-all duration-300 hover:scale-105" 
+          />
         </div>
       </div>
       
@@ -63,30 +102,56 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
             if (item.label === 'Locataires') {
               return (
                 <li key={index} className="relative">
-                  <div className="flex gap-1">
-                    <button
+                  <div className="flex gap-1 overflow-hidden">
+                    <motion.button
                       onClick={toggleSubMenu}
                       className={cn(
-                        "flex items-center justify-center rounded-lg px-4 py-2 sm:py-2.5 md:py-3 text-sm font-medium transition-colors min-h-[36px] md:min-h-[44px]",
-                        showSubMenu
-                          ? "bg-[#E84A33] text-white flex-1"
-                          : "bg-[#E84A33] text-white hover:bg-[#E84A33]/80 flex-1"
+                        "flex items-center justify-center rounded-lg px-4 py-2 sm:py-2.5 md:py-3 text-sm font-medium min-h-[36px] md:min-h-[44px] transition-colors",
+                        item.active
+                          ? "bg-[#E84A33] text-white"
+                          : "bg-[#9CA3AF] text-white hover:bg-[#9095A1]"
                       )}
+                      animate={{
+                        width: showSubMenu ? 'calc(100% - 96px)' : '100%',
+                      }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
                     >
                       {item.label}
-                    </button>
+                    </motion.button>
                     
-                    {showSubMenu && tenantSubMenuItems.map((subItem, subIndex) => (
-                      <Link
-                        key={`sub-${subIndex}`}
-                        to={subItem.path}
-                        className="flex items-center justify-center bg-[#9CA3AF] text-white hover:bg-[#9CA3AF]/80 rounded-lg p-2 min-h-[44px] min-w-[44px]"
-                      >
-                        <span className="flex-shrink-0">
-                          {subItem.icon}
-                        </span>
-                      </Link>
-                    ))}
+                    <AnimatePresence>
+                      {showSubMenu && (
+                        <motion.div 
+                          className="flex gap-1"
+                          initial={{ opacity: 0, width: 0 }}
+                          animate={{ opacity: 1, width: 'auto' }}
+                          exit={{ opacity: 0, width: 0 }}
+                          transition={{ duration: 0.3, ease: "easeInOut" }}
+                        >
+                          {tenantSubMenuItems.map((subItem, subIndex) => (
+                            <motion.div
+                              key={`sub-${subIndex}`}
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: subIndex * 0.1, type: 'spring', stiffness: 300, damping: 20 }}
+                            >
+                              <Link
+                                to={subItem.path}
+                                className={`flex items-center justify-center rounded-lg p-2 min-h-[44px] min-w-[44px] transition-colors ${
+                                  subItem.isActive 
+                                    ? 'bg-[#E84A33] text-white hover:bg-[#E84A33]' 
+                                    : 'bg-[#9CA3AF] text-white hover:bg-[#E84A33] hover:text-white'
+                                }`}
+                              >
+                                <span className="flex-shrink-0">
+                                  {subItem.icon}
+                                </span>
+                              </Link>
+                            </motion.div>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </li>
               );
