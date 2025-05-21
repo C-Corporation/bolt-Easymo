@@ -40,18 +40,18 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     ));
   };
 
-  // Sub menu items for tenants
+  // Sous-menu pour les locataires
   const tenantSubMenuItems = [
-    { label: 'Profils', path: '/locataires/profils', icon: <User className="w-5 h-5" /> },
-    { label: 'Tableau', path: '/locataires/tableau', icon: <Table className="w-5 h-5" /> }
+    { label: '', path: '/locataires/profils', icon: <User className="w-5 h-5" /> },
+    { label: '', path: '/locataires/tableau', icon: <Table className="w-5 h-5" /> }
   ];
 
   return (
     <div className={cn("flex flex-col h-[calc(100vh-40px)] bg-[#5D6169] w-56 text-white rounded-lg shadow-lg overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100", className)}>
-      {/* Logo Section - Hauteur réduite */}
+      {/* Logo Section - Hauteur ajustée */}
       <div className="p-3 flex items-center justify-center">
-        <div className="w-32 h-16 flex-shrink-0 overflow-hidden">
-          <img src="/lovable-uploads/11042e08-27b3-49e5-bbb7-e66c8b1d59d0.png" alt="Easymo Logo" className="w-full h-full object-contain" />
+        <div className="w-32 h-20 flex-shrink-0 overflow-hidden">
+          <img src="/lovable-uploads/c06a4b99-8535-4448-a4c6-de77d817eb95.png" alt="Easymo Logo" className="w-full h-full object-contain" />
         </div>
       </div>
       
@@ -63,40 +63,31 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
             if (item.label === 'Locataires') {
               return (
                 <li key={index} className="relative">
-                  <button
-                    onClick={toggleSubMenu}
-                    className={cn(
-                      "flex items-center justify-center rounded-lg px-4 py-2 sm:py-2.5 md:py-3 text-sm font-medium transition-colors w-full min-h-[36px] md:min-h-[44px]",
-                      showSubMenu
-                        ? "bg-[#E84A33] text-white justify-start"
-                        : "bg-[#E84A33] text-white hover:bg-[#E84A33]/80 justify-center"
-                    )}
-                  >
-                    {showSubMenu ? (
-                      <>
-                        {item.label}
-                      </>
-                    ) : (
-                      item.label
-                    )}
-                  </button>
-                  
-                  {showSubMenu && (
-                    <div className="mt-2 ml-4 space-y-2">
-                      {tenantSubMenuItems.map((subItem, subIndex) => (
-                        <Link
-                          key={`sub-${subIndex}`}
-                          to={subItem.path}
-                          className="flex items-center gap-2 bg-[#9CA3AF] text-white hover:bg-[#9CA3AF]/80 rounded-lg px-3 py-2 text-sm font-medium"
-                        >
-                          <span className="flex-shrink-0">
-                            {subItem.icon}
-                          </span>
-                          <span>{subItem.label}</span>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
+                  <div className="flex gap-1">
+                    <button
+                      onClick={toggleSubMenu}
+                      className={cn(
+                        "flex items-center justify-center rounded-lg px-4 py-2 sm:py-2.5 md:py-3 text-sm font-medium transition-colors min-h-[36px] md:min-h-[44px]",
+                        showSubMenu
+                          ? "bg-[#E84A33] text-white flex-1"
+                          : "bg-[#E84A33] text-white hover:bg-[#E84A33]/80 flex-1"
+                      )}
+                    >
+                      {item.label}
+                    </button>
+                    
+                    {showSubMenu && tenantSubMenuItems.map((subItem, subIndex) => (
+                      <Link
+                        key={`sub-${subIndex}`}
+                        to={subItem.path}
+                        className="flex items-center justify-center bg-[#9CA3AF] text-white hover:bg-[#9CA3AF]/80 rounded-lg p-2 min-h-[44px] min-w-[44px]"
+                      >
+                        <span className="flex-shrink-0">
+                          {subItem.icon}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
                 </li>
               );
             }

@@ -24,14 +24,14 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onExport }) 
           <div className="flex justify-center space-x-4">
             <Button
               onClick={() => onExport('pdf')}
-              className="flex-1 gap-2 bg-[#8f95a1] hover:bg-[#e84a33] text-white"
+              className="flex-1 gap-2 bg-[#5d6169] hover:bg-[#e84a33] text-white"
             >
               <Printer />
               PDF
             </Button>
             <Button
               onClick={() => onExport('excel')}
-              className="flex-1 gap-2 bg-[#8f95a1] hover:bg-[#e84a33] text-white"
+              className="flex-1 gap-2 bg-[#5d6169] hover:bg-[#e84a33] text-white"
             >
               <FileText />
               Excel

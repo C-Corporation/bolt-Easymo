@@ -199,7 +199,7 @@ const TenantsTable: React.FC = () => {
 
   // Formater le nombre avec les séparateurs de milliers
   const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('fr-FR').format(num);
+    return new Intl.NumberFormat('fr-FR', { useGrouping: true }).format(num);
   };
 
   // Formater la date pour l'afficher par mois
@@ -262,10 +262,9 @@ const TenantsTable: React.FC = () => {
       });
 
       // Récupérer la position finale du tableau
-      // Fix: Get the last calculated position directly
       const finalY = (doc as any).lastAutoTable.finalY || tableY + 10;
       
-      // Ajouter les sous-totaux après le tableau
+      // Ajouter les sous-totaux après le tableau avec format de nombre corrigé
       doc.setFontSize(10);
       doc.text('Récapitulatif', 14, finalY + 10);
       
@@ -361,7 +360,7 @@ const TenantsTable: React.FC = () => {
               size="sm"
               className={`text-sm ${isCurrentMonth 
                 ? 'bg-[#e84a33] text-white hover:bg-[#e84a33]' 
-                : 'text-gray-500 bg-gray-100 hover:bg-[#e84a33] hover:text-white'}`}
+                : 'text-[#2a2f36] bg-[#8f95a1] hover:bg-[#e84a33] hover:text-white'}`}
               onClick={() => handleMonthSelect(monthDate)}
             >
               {format(monthDate, 'MMM', { locale: fr })}
@@ -375,7 +374,7 @@ const TenantsTable: React.FC = () => {
           variant="outline"
           size="sm" 
           onClick={() => setDate(new Date(date.getFullYear() - 1, date.getMonth(), 1))}
-          className="text-gray-500 bg-gray-100 hover:bg-[#e84a33] hover:text-white"
+          className="text-[#2a2f36] bg-[#8f95a1] hover:bg-[#e84a33] hover:text-white"
         >
           {date.getFullYear() - 1}
         </Button>
@@ -384,7 +383,7 @@ const TenantsTable: React.FC = () => {
           variant="outline" 
           size="sm"
           onClick={() => setDate(new Date(date.getFullYear() + 1, date.getMonth(), 1))}
-          className="text-gray-500 bg-gray-100 hover:bg-[#e84a33] hover:text-white"
+          className="text-[#2a2f36] bg-[#8f95a1] hover:bg-[#e84a33] hover:text-white"
         >
           {date.getFullYear() + 1}
         </Button>
@@ -465,11 +464,13 @@ const TenantsTable: React.FC = () => {
                   onMouseLeave={() => setHoveredRow(null)}
                 >
                   <div className="flex justify-center">
-                    {/* Checkboxes toujours visibles */}
+                    {/* Checkboxes seulement visibles au survol ou si sélectionnées */}
                     <Checkbox
                       checked={selectedTenants.includes(tenant.id)}
                       onCheckedChange={() => toggleTenantSelection(tenant.id)}
-                      className="data-[state=checked]:bg-[#8f95a1] data-[state=checked]:text-primary-foreground"
+                      className={`data-[state=checked]:bg-[#5d6169] data-[state=checked]:text-primary-foreground ${
+                        !selectedTenants.includes(tenant.id) && hoveredRow !== tenant.id ? 'opacity-0' : 'opacity-100'
+                      }`}
                     />
                   </div>
                   
@@ -554,7 +555,7 @@ const TenantsTable: React.FC = () => {
           </div>
         </div>
 
-        {/* Boutons d'action */}
+        {/* Boutons d'action - avec correction des couleurs et des boutons désactivés */}
         <div className="p-4 border-t flex items-center justify-between space-x-4 bg-white rounded-b-lg">
           {/* Boutons à gauche */}
           <div className="flex space-x-4">
@@ -563,7 +564,7 @@ const TenantsTable: React.FC = () => {
               disabled={selectedTenants.length === 0}
               className={`shadow-sm ${
                 selectedTenants.length > 0
-                  ? 'bg-[#8f95a1] text-white hover:bg-[#e84a33]' 
+                  ? 'bg-[#5d6169] text-white hover:bg-[#e84a33]' 
                   : 'bg-[#e7e9ec] text-[#b4bfd1]'
               }`}
               onClick={handleEdit}
@@ -576,18 +577,18 @@ const TenantsTable: React.FC = () => {
             
             <Button 
               variant="default" 
-              className="shadow-sm bg-[#8f95a1] text-white hover:bg-[#e84a33]"
+              className="shadow-sm bg-[#5d6169] text-white hover:bg-[#e84a33]"
               onClick={() => setIsAddModalOpen(true)}
             >
               <Plus className="mr-2 h-4 w-4" /> Ajouter un locataire
             </Button>
           </div>
           
-          {/* Boutons à droite - Ordre modifié: Imprimer avant Importer */}
+          {/* Boutons à droite - Imprimer avant Importer */}
           <div className="flex items-center space-x-4">
             <Button 
               variant="outline"
-              className="shadow-sm"
+              className="shadow-sm bg-[#5d6169] text-white hover:bg-[#e84a33]"
               onClick={() => setIsExportModalOpen(true)}
             >
               <Printer className="mr-2 h-4 w-4" /> Imprimer
@@ -595,7 +596,7 @@ const TenantsTable: React.FC = () => {
             
             <Button 
               variant="outline"
-              className="shadow-sm"
+              className="shadow-sm bg-[#5d6169] text-white hover:bg-[#e84a33]"
               onClick={() => setIsImportModalOpen(true)}
             >
               <Import className="mr-2 h-4 w-4" /> Importer
@@ -605,7 +606,7 @@ const TenantsTable: React.FC = () => {
               <DropdownMenuTrigger asChild>
                 <Button 
                   variant="outline"
-                  className="flex items-center gap-2 shadow-sm"
+                  className="flex items-center gap-2 shadow-sm bg-[#5d6169] text-white hover:bg-[#e84a33]"
                 >
                   <Eye className="h-4 w-4" />
                   Colonnes
@@ -628,7 +629,7 @@ const TenantsTable: React.FC = () => {
               <PopoverTrigger asChild>
                 <Button 
                   variant="outline"
-                  className="shadow-sm flex items-center"
+                  className="shadow-sm bg-[#5d6169] text-white hover:bg-[#e84a33] flex items-center"
                 >
                   <Calendar className="mr-2 h-4 w-4" />
                   {formatMonthDate(date)}
