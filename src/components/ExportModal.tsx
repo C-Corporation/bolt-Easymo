@@ -13,25 +13,25 @@ interface ExportModalProps {
 const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onExport }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-white text-gray-900">
         <DialogHeader>
-          <DialogTitle>Exporter les données</DialogTitle>
+          <DialogTitle className="text-gray-900">Exporter les données</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col space-y-4 py-4">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-gray-600">
             Choisissez le format d'exportation souhaité
           </p>
           <div className="flex justify-center space-x-4">
             <Button
               onClick={() => onExport('pdf')}
-              className="flex-1 gap-2 bg-[#8f95a1] hover:bg-[#d9592b] text-white"
+              className="flex-1 gap-2 bg-[#8f95a1] hover:bg-[#e84a33] text-white"
             >
               <Printer />
               PDF
             </Button>
             <Button
               onClick={() => onExport('excel')}
-              className="flex-1 gap-2 bg-[#8f95a1] hover:bg-[#d9592b] text-white"
+              className="flex-1 gap-2 bg-[#8f95a1] hover:bg-[#e84a33] text-white"
             >
               <FileText />
               Excel

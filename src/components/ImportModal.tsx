@@ -63,12 +63,15 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImportSucc
           return;
         }
 
-        // Vérifier les colonnes minimales requises
-        const requiredColumns = ['name', 'status', 'location'];
+        // Vérifier les colonnes minimales requises (en français)
+        const requiredColumns = ['nom', 'situation', 'localisation'];
         const firstRow = jsonData[0] as Record<string, any>;
         
         const missingColumns = requiredColumns.filter(col => 
-          !Object.keys(firstRow).includes(col)
+          !Object.keys(firstRow).some(key => 
+            key.toLowerCase() === col || 
+            key.toLowerCase().includes(col)
+          )
         );
         
         if (missingColumns.length > 0) {
@@ -104,28 +107,27 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImportSucc
 
           // Préparer les données pour l'insertion
           const tenantsToInsert = jsonData.map((row: any) => {
-            // Fusionner name et firstName si les deux sont présents
-            let fullName = row.name || '';
-            if (row.firstName) {
-              fullName = `${fullName} ${row.firstName}`;
-            }
-            
+            // Mapper les noms de colonnes français vers les noms de colonnes en anglais
+            const name = row.nom || row["nom & prénom"] || row.name || '';
+            const status = row.situation || row.status || 'En règle';
+            const location = row.localisation || row.location || '';
+            const unpaid = parseFloat(row.impayé || row.unpaid || 0);
+            const rent = parseFloat(row["montant loyer"] || row.loyer || row.rent || 0);
+            const observation = row.observation || 'RAS';
+            const propertyType = row["type bien"] || row.propertyType || '';
+            const caution = parseFloat(row.caution || 0);
+            const cautionMonths = parseInt(row["mois de caution"] || row.cautionMonths || 1);
+
             return {
-              name: fullName,
-              firstName: '',  // Laissé vide car fusionné avec name
-              secondName: row.secondName || '',
-              gender: ['Homme', 'Femme', 'Autre'].includes(row.gender) ? row.gender : 'Homme',
-              birthDate: row.birthDate || null,
-              phoneNumber: row.phoneNumber || '',
-              status: ['En règle', 'Pas en règle'].includes(row.status) ? row.status : 'En règle',
-              unpaid: parseFloat(row.unpaid || 0),
-              observation: row.observation || 'RAS',  // Observation n'est plus obligatoire
-              location: row.location || '',
-              propertyType: row.propertyType || '',
-              rent: parseFloat(row.rent || 0),
-              caution: parseFloat(row.caution || 0),
-              cautionMonths: parseInt(row.cautionMonths || 1),
-              arrival_date: row.arrival_date || null,
+              name,
+              status: ['En règle', 'Pas en règle'].includes(status) ? status : 'En règle',
+              location,
+              unpaid,
+              rent,
+              observation,
+              propertyType,
+              caution,
+              cautionMonths,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
             };
@@ -178,17 +180,16 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImportSucc
             <AlertDescription className="text-blue-700">
               <p className="mb-2">Le fichier Excel doit contenir au minimum les colonnes suivantes:</p>
               <ul className="list-disc pl-5 space-y-1">
-                <li><strong>name</strong>: Nom complet du locataire (obligatoire)</li>
-                <li><strong>status</strong>: Situation: "En règle" ou "Pas en règle" (obligatoire)</li>
-                <li><strong>location</strong>: Adresse du bien (obligatoire)</li>
+                <li><strong>Nom & Prénom</strong>: Nom complet du locataire (obligatoire)</li>
+                <li><strong>Situation</strong>: "En règle" ou "Pas en règle" (obligatoire)</li>
+                <li><strong>Localisation</strong>: Adresse du bien (obligatoire)</li>
               </ul>
               <p className="mt-2 text-sm">Colonnes optionnelles recommandées:</p>
               <ul className="list-disc pl-5 text-sm space-y-1">
-                <li><strong>unpaid</strong>: Montant des impayés</li>
-                <li><strong>rent</strong>: Loyer mensuel</li>
-                <li><strong>caution</strong>: Montant de la caution</li>
-                <li><strong>phoneNumber</strong>: Numéro de téléphone</li>
-                <li><strong>arrival_date</strong>: Date d'arrivée</li>
+                <li><strong>Montant Loyer</strong>: Loyer mensuel</li>
+                <li><strong>Impayé</strong>: Montant des impayés</li>
+                <li><strong>Caution</strong>: Montant de la caution</li>
+                <li><strong>Mois de Caution</strong>: Nombre de mois couverts par la caution</li>
               </ul>
             </AlertDescription>
           </Alert>
@@ -268,7 +269,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImportSucc
                   </table>
                 </div>
                 <p className="text-xs text-gray-700 mt-1">
-                  Colonnes requises: name, status, location.
+                  Colonnes requises: Nom & Prénom, Situation, Localisation.
                 </p>
               </div>
             )}

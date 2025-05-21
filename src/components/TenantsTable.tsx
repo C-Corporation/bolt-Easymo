@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronUp, ChevronDown, Plus, Pencil, Calendar, Info, Eye, Printer, Import } from 'lucide-react';
+import { ChevronUp, ChevronDown, Plus, Pencil, Calendar, Info, Eye, Printer, Import, User, Table } from 'lucide-react';
 import { useTenants } from '@/hooks/useTenants';
 import AddTenantModal from './AddTenantModal';
 import ExportModal from './ExportModal';
@@ -42,7 +42,7 @@ interface SortConfig {
 
 // Interface pour les colonnes
 interface Column {
-  key: keyof Tenant | 'caution' | 'arrival_date' | 'updated_at' | 'cautionMonths'; // Ajout de cautionMonths
+  key: keyof Tenant | 'caution' | 'arrival_date' | 'updated_at' | 'cautionMonths';
   label: string;
   visible: boolean;
   sortable: boolean;
@@ -241,10 +241,14 @@ const TenantsTable: React.FC = () => {
       );
       
       doc.text('Liste des locataires', 14, 16);
+      
+      // Position initiale du tableau
+      let tableY = 20;
+      
       doc.autoTable({
         head: [visibleColumnLabels],
         body: tableData,
-        startY: 20,
+        startY: tableY,
         theme: 'grid',
         styles: {
           fontSize: 8,
@@ -257,8 +261,11 @@ const TenantsTable: React.FC = () => {
         },
       });
 
-      // Ajout des sous-totaux au PDF après le tableau
-      const finalY = doc.autoTable.previous?.finalY || 20;
+      // Récupérer la position finale du tableau
+      // Fix: Get the last calculated position directly
+      const finalY = (doc as any).lastAutoTable.finalY || tableY + 10;
+      
+      // Ajouter les sous-totaux après le tableau
       doc.setFontSize(10);
       doc.text('Récapitulatif', 14, finalY + 10);
       
@@ -353,8 +360,8 @@ const TenantsTable: React.FC = () => {
               variant={isCurrentMonth ? "default" : "outline"}
               size="sm"
               className={`text-sm ${isCurrentMonth 
-                ? 'bg-[#8f95a1] text-[#2a2f36] hover:bg-[#e84a33] hover:text-white' 
-                : 'text-[#2a2f36] bg-[#e7e9ec] hover:bg-[#e84a33] hover:text-white'}`}
+                ? 'bg-[#e84a33] text-white hover:bg-[#e84a33]' 
+                : 'text-gray-500 bg-gray-100 hover:bg-[#e84a33] hover:text-white'}`}
               onClick={() => handleMonthSelect(monthDate)}
             >
               {format(monthDate, 'MMM', { locale: fr })}
@@ -368,7 +375,7 @@ const TenantsTable: React.FC = () => {
           variant="outline"
           size="sm" 
           onClick={() => setDate(new Date(date.getFullYear() - 1, date.getMonth(), 1))}
-          className="text-[#2a2f36] bg-[#e7e9ec] hover:bg-[#e84a33] hover:text-white"
+          className="text-gray-500 bg-gray-100 hover:bg-[#e84a33] hover:text-white"
         >
           {date.getFullYear() - 1}
         </Button>
@@ -377,7 +384,7 @@ const TenantsTable: React.FC = () => {
           variant="outline" 
           size="sm"
           onClick={() => setDate(new Date(date.getFullYear() + 1, date.getMonth(), 1))}
-          className="text-[#2a2f36] bg-[#e7e9ec] hover:bg-[#e84a33] hover:text-white"
+          className="text-gray-500 bg-gray-100 hover:bg-[#e84a33] hover:text-white"
         >
           {date.getFullYear() + 1}
         </Button>
@@ -470,7 +477,11 @@ const TenantsTable: React.FC = () => {
                     <div 
                       key={`${tenant.id}-${column.key}`} 
                       className={`text-center truncate ${
-                        column.key === 'status' && tenant[column.key] === 'Pas en règle' ? 'text-red-500' : 'text-[#62666c]'
+                        column.key === 'status' && tenant[column.key] === 'Pas en règle' 
+                          ? 'text-red-500' 
+                          : column.key === 'status' && tenant[column.key] === 'En règle'
+                            ? 'text-green-500'
+                            : 'text-[#62666c]'
                       }`}
                     >
                       {getCellValue(tenant, column.key)}
