@@ -350,7 +350,9 @@ const TenantsTable: React.FC = () => {
               key={i}
               variant={isCurrentMonth ? "default" : "outline"}
               size="sm"
-              className={`text-sm ${isCurrentMonth ? 'bg-[#8f95a1]' : ''}`}
+              className={`text-sm ${isCurrentMonth 
+                ? 'bg-[#8f95a1] text-white hover:bg-[#e84a33] hover:text-white' 
+                : 'text-[#2a2f36] hover:bg-[#e84a33] hover:text-white'}`}
               onClick={() => handleMonthSelect(monthDate)}
             >
               {format(monthDate, 'MMM', { locale: fr })}
@@ -364,6 +366,7 @@ const TenantsTable: React.FC = () => {
           variant="outline"
           size="sm" 
           onClick={() => setDate(new Date(date.getFullYear() - 1, date.getMonth(), 1))}
+          className="text-[#2a2f36] hover:bg-[#e84a33] hover:text-white"
         >
           {date.getFullYear() - 1}
         </Button>
@@ -372,6 +375,7 @@ const TenantsTable: React.FC = () => {
           variant="outline" 
           size="sm"
           onClick={() => setDate(new Date(date.getFullYear() + 1, date.getMonth(), 1))}
+          className="text-[#2a2f36] hover:bg-[#e84a33] hover:text-white"
         >
           {date.getFullYear() + 1}
         </Button>
@@ -548,7 +552,7 @@ const TenantsTable: React.FC = () => {
               disabled={selectedTenants.length === 0}
               className={`shadow-sm ${
                 selectedTenants.length > 0
-                  ? 'bg-[#8f95a1] text-white hover:bg-[#d9592b]' 
+                  ? 'bg-[#8f95a1] text-white hover:bg-[#e84a33]' 
                   : 'bg-gray-300 text-gray-500'
               }`}
               onClick={handleEdit}
@@ -561,29 +565,29 @@ const TenantsTable: React.FC = () => {
             
             <Button 
               variant="default" 
-              className="shadow-sm bg-[#8f95a1] text-white hover:bg-[#d9592b]"
+              className="shadow-sm bg-[#8f95a1] text-white hover:bg-[#e84a33]"
               onClick={() => setIsAddModalOpen(true)}
             >
               <Plus className="mr-2 h-4 w-4" /> Ajouter un locataire
             </Button>
           </div>
           
-          {/* Boutons à droite - Ordre modifié: Importer avant Imprimer */}
+          {/* Boutons à droite - Ordre modifié: Imprimer avant Importer */}
           <div className="flex items-center space-x-4">
-            <Button 
-              variant="outline"
-              className="shadow-sm"
-              onClick={() => setIsImportModalOpen(true)}
-            >
-              <Import className="mr-2 h-4 w-4" /> Importer
-            </Button>
-            
             <Button 
               variant="outline"
               className="shadow-sm"
               onClick={() => setIsExportModalOpen(true)}
             >
               <Printer className="mr-2 h-4 w-4" /> Imprimer
+            </Button>
+            
+            <Button 
+              variant="outline"
+              className="shadow-sm"
+              onClick={() => setIsImportModalOpen(true)}
+            >
+              <Import className="mr-2 h-4 w-4" /> Importer
             </Button>
             
             <DropdownMenu>

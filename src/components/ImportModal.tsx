@@ -103,24 +103,33 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImportSucc
           }
 
           // Préparer les données pour l'insertion
-          const tenantsToInsert = jsonData.map((row: any) => ({
-            name: row.name || '',
-            firstName: row.firstName || '',
-            secondName: row.secondName || '',
-            gender: ['Homme', 'Femme', 'Autre'].includes(row.gender) ? row.gender : 'Homme',
-            birthDate: row.birthDate || null,
-            phoneNumber: row.phoneNumber || '',
-            status: ['En règle', 'Pas en règle'].includes(row.status) ? row.status : 'En règle',
-            unpaid: parseFloat(row.unpaid || 0),
-            observation: row.observation || 'RAS',
-            location: row.location || '',
-            propertyType: row.propertyType || '',
-            rent: parseFloat(row.rent || 0),
-            caution: parseFloat(row.caution || 0),
-            cautionMonths: parseInt(row.cautionMonths || 1),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }));
+          const tenantsToInsert = jsonData.map((row: any) => {
+            // Fusionner name et firstName si les deux sont présents
+            let fullName = row.name || '';
+            if (row.firstName) {
+              fullName = `${fullName} ${row.firstName}`;
+            }
+            
+            return {
+              name: fullName,
+              firstName: '',  // Laissé vide car fusionné avec name
+              secondName: row.secondName || '',
+              gender: ['Homme', 'Femme', 'Autre'].includes(row.gender) ? row.gender : 'Homme',
+              birthDate: row.birthDate || null,
+              phoneNumber: row.phoneNumber || '',
+              status: ['En règle', 'Pas en règle'].includes(row.status) ? row.status : 'En règle',
+              unpaid: parseFloat(row.unpaid || 0),
+              observation: row.observation || 'RAS',  // Observation n'est plus obligatoire
+              location: row.location || '',
+              propertyType: row.propertyType || '',
+              rent: parseFloat(row.rent || 0),
+              caution: parseFloat(row.caution || 0),
+              cautionMonths: parseInt(row.cautionMonths || 1),
+              arrival_date: row.arrival_date || null,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            };
+          });
 
           // Insertion dans la base de données
           const { data, error } = await supabase
@@ -153,9 +162,9 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImportSucc
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-white text-gray-900">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-gray-900">
             <FileSpreadsheet className="h-5 w-5" /> 
             Importer des locataires
           </DialogTitle>
@@ -163,28 +172,32 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImportSucc
 
         <div className="py-4">
           {/* Informations sur le format du fichier */}
-          <Alert className="mb-4 bg-blue-50">
-            <Info className="h-4 w-4 text-blue-500" />
-            <AlertTitle className="text-blue-700">Format du fichier</AlertTitle>
-            <AlertDescription className="text-sm">
-              <p className="mb-1">Le fichier Excel doit contenir au minimum les colonnes suivantes:</p>
-              <ul className="list-disc pl-5 text-xs space-y-1">
-                <li><strong>name</strong>: Nom du locataire (obligatoire)</li>
+          <Alert className="mb-4 bg-blue-50 border-blue-200">
+            <Info className="h-4 w-4 text-blue-600" />
+            <AlertTitle className="text-blue-800 font-medium">Format du fichier</AlertTitle>
+            <AlertDescription className="text-blue-700">
+              <p className="mb-2">Le fichier Excel doit contenir au minimum les colonnes suivantes:</p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li><strong>name</strong>: Nom complet du locataire (obligatoire)</li>
                 <li><strong>status</strong>: Situation: "En règle" ou "Pas en règle" (obligatoire)</li>
                 <li><strong>location</strong>: Adresse du bien (obligatoire)</li>
-                <li><strong>firstName</strong>: Prénom du locataire</li>
+              </ul>
+              <p className="mt-2 text-sm">Colonnes optionnelles recommandées:</p>
+              <ul className="list-disc pl-5 text-sm space-y-1">
                 <li><strong>unpaid</strong>: Montant des impayés</li>
-                <li><strong>observation</strong>: Notes sur le locataire</li>
                 <li><strong>rent</strong>: Loyer mensuel</li>
+                <li><strong>caution</strong>: Montant de la caution</li>
+                <li><strong>phoneNumber</strong>: Numéro de téléphone</li>
+                <li><strong>arrival_date</strong>: Date d'arrivée</li>
               </ul>
             </AlertDescription>
           </Alert>
 
           {error && (
-            <Alert variant="destructive" className="mb-4">
+            <Alert variant="destructive" className="mb-4 border-red-300">
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Erreur</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
+              <AlertTitle className="text-red-800">Erreur</AlertTitle>
+              <AlertDescription className="text-red-700">{error}</AlertDescription>
             </Alert>
           )}
 
@@ -222,7 +235,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImportSucc
 
             {preview.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium">Aperçu des données (5 premières lignes)</h4>
+                <h4 className="text-sm font-medium text-gray-900">Aperçu des données (5 premières lignes)</h4>
                 <div className="mt-2 border rounded-md max-h-40 overflow-y-auto p-2">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
@@ -230,7 +243,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImportSucc
                         {Object.keys(preview[0]).slice(0, 5).map((header, idx) => (
                           <th 
                             key={idx}
-                            className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
                           >
                             {header}
                           </th>
@@ -243,7 +256,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImportSucc
                           {Object.keys(row).slice(0, 5).map((key, cellIdx) => (
                             <td 
                               key={cellIdx} 
-                              className="px-3 py-2 whitespace-nowrap text-xs"
+                              className="px-3 py-2 whitespace-nowrap text-xs text-gray-800"
                             >
                               {String(row[key]).substring(0, 20)}
                               {String(row[key]).length > 20 ? '...' : ''}
@@ -254,8 +267,8 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImportSucc
                     </tbody>
                   </table>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  Colonnes requises: name, status, location. Les données incorrectes seront ignorées.
+                <p className="text-xs text-gray-700 mt-1">
+                  Colonnes requises: name, status, location.
                 </p>
               </div>
             )}
@@ -268,12 +281,14 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImportSucc
             variant="outline"
             onClick={onClose}
             disabled={isLoading}
+            className="text-gray-800"
           >
             Annuler
           </Button>
           <Button 
             onClick={handleImport}
             disabled={!file || isLoading || !!error}
+            className="bg-[#8f95a1] hover:bg-[#e84a33] text-white"
           >
             {isLoading ? "Importation..." : "Importer"}
           </Button>

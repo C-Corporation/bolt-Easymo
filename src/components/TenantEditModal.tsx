@@ -130,9 +130,9 @@ const TenantEditModal: React.FC<TenantEditModalProps> = ({ isOpen, onClose, tena
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-white text-gray-800">
         <DialogHeader>
-          <DialogTitle>Modifier le locataire</DialogTitle>
+          <DialogTitle className="text-gray-900">Modifier le locataire</DialogTitle>
         </DialogHeader>
         
         <Form {...form}>
@@ -146,10 +146,15 @@ const TenantEditModal: React.FC<TenantEditModalProps> = ({ isOpen, onClose, tena
                 variant="outline"
                 onClick={onClose}
                 disabled={isLoading}
+                className="text-gray-800"
               >
                 Annuler
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button 
+                type="submit" 
+                disabled={isLoading}
+                className="bg-[#8f95a1] hover:bg-[#e84a33] text-white"
+              >
                 {isLoading ? "Modification..." : "Enregistrer"}
               </Button>
             </DialogFooter>

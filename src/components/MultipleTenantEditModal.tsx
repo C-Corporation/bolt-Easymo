@@ -12,20 +12,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
-// Schéma de validation du locataire (même que dans TenantEditModal)
+// Schéma de validation du locataire (simplifié pour la modification multiple)
 const tenantFormSchema = z.object({
-  name: z.string().min(2, { message: 'Le nom doit contenir au moins 2 caractères.' }),
-  firstName: z.string().min(1, { message: 'Le prénom est requis.' }),
-  secondName: z.string().optional(),
-  gender: z.enum(['Homme', 'Femme', 'Autre']),
-  birthDate: z.string().optional(),
-  phoneNumber: z.string().min(8, { message: 'Le numéro de téléphone doit être valide.' }),
   status: z.enum(['En règle', 'Pas en règle']),
   unpaid: z.number().nonnegative({ message: "Le montant impayé ne peut pas être négatif" }),
   location: z.string().min(3, { message: 'La localisation doit être spécifiée.' }),
-  propertyType: z.string().min(1, { message: 'Le type de bien est requis.' }),
+  propertyType: z.string().optional(),
   observation: z.string().optional(),
-  rent: z.number().positive({ message: "Le loyer doit être positif" }),
+  rent: z.number().positive({ message: "Le loyer doit être positif" }).optional(),
   caution: z.number().optional(),
   cautionMonths: z.number().positive({ message: "Le nombre de mois doit être positif" }).optional(),
 });
@@ -62,12 +56,6 @@ const MultipleTenantEditModal: React.FC<MultipleTenantEditModalProps> = ({
   const form = useForm<TenantFormValues>({
     resolver: zodResolver(tenantFormSchema),
     defaultValues: {
-      name: '',
-      firstName: '',
-      secondName: '',
-      gender: 'Homme',
-      birthDate: '',
-      phoneNumber: '',
       status: 'En règle',
       unpaid: 0,
       location: '',
@@ -93,12 +81,6 @@ const MultipleTenantEditModal: React.FC<MultipleTenantEditModalProps> = ({
   useEffect(() => {
     if (currentTenant) {
       form.reset({
-        name: currentTenant.name || '',
-        firstName: currentTenant.firstName || '',
-        secondName: currentTenant.secondName || '',
-        gender: currentTenant.gender || 'Homme',
-        birthDate: currentTenant.birthDate || '',
-        phoneNumber: currentTenant.phoneNumber || '',
         status: currentTenant.status || 'En règle',
         unpaid: currentTenant.unpaid || 0,
         location: currentTenant.location || '',
@@ -172,9 +154,9 @@ const MultipleTenantEditModal: React.FC<MultipleTenantEditModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-white text-gray-800">
         <DialogHeader>
-          <DialogTitle className="flex justify-between items-center">
+          <DialogTitle className="flex justify-between items-center text-gray-900">
             <span>Modifier les locataires sélectionnés</span>
             <span className="text-sm font-normal text-gray-500">
               {currentIndex + 1} / {selectedTenants.length}
@@ -193,16 +175,20 @@ const MultipleTenantEditModal: React.FC<MultipleTenantEditModalProps> = ({
         
         {currentTenant && (
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 w-full">
               {/* Information sur le locataire actuel */}
-              <div className="bg-blue-50 p-2 rounded-md mb-4 text-center">
-                <p className="text-sm font-medium text-blue-700">
-                  Modification de: <span className="font-bold">{currentTenant.name} {currentTenant.firstName}</span>
+              <div className="bg-blue-50 p-3 rounded-md mb-4 text-center">
+                <p className="font-medium text-blue-800">
+                  Modification de: <span className="font-bold">{currentTenant.name}</span>
                 </p>
               </div>
               
-              {/* Contenu du formulaire de locataire */}
-              <TenantForm form={form} />
+              {/* Version simplifiée du formulaire avec champs focalisés sur les mises à jour de status */}
+              <div className="grid grid-cols-2 gap-4 w-full">
+                <div className="col-span-2">
+                  <TenantForm form={form} simplified={true} />
+                </div>
+              </div>
               
               <DialogFooter className="flex justify-between items-center space-x-2 pt-4">
                 {/* Navigation */}
@@ -213,6 +199,7 @@ const MultipleTenantEditModal: React.FC<MultipleTenantEditModalProps> = ({
                     onClick={goToPrevious}
                     disabled={isFirstTenant || isLoading}
                     size="sm"
+                    className="text-gray-800"
                   >
                     <ChevronLeft className="h-4 w-4 mr-1" /> Précédent
                   </Button>
@@ -223,6 +210,7 @@ const MultipleTenantEditModal: React.FC<MultipleTenantEditModalProps> = ({
                     onClick={onClose}
                     disabled={isLoading}
                     size="sm"
+                    className="text-gray-800"
                   >
                     Annuler
                   </Button>
@@ -230,12 +218,20 @@ const MultipleTenantEditModal: React.FC<MultipleTenantEditModalProps> = ({
                 
                 <div>
                   {isLastTenant ? (
-                    <Button type="submit" disabled={isLoading}>
+                    <Button 
+                      type="submit" 
+                      disabled={isLoading} 
+                      className="bg-[#8f95a1] hover:bg-[#e84a33] text-white"
+                    >
                       <Save className="h-4 w-4 mr-1" />
                       {isLoading ? "Enregistrement..." : "Terminer"}
                     </Button>
                   ) : (
-                    <Button type="submit" disabled={isLoading}>
+                    <Button 
+                      type="submit" 
+                      disabled={isLoading}
+                      className="bg-[#8f95a1] hover:bg-[#e84a33] text-white"
+                    >
                       {isLoading ? "Enregistrement..." : "Suivant"}
                       <ChevronRight className="h-4 w-4 ml-1" />
                     </Button>
