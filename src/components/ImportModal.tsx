@@ -1,10 +1,8 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
-import { importIcon, fileExcel } from 'lucide-react';
-import { AlertCircle } from 'lucide-react';
+import { Import, FileSpreadsheet, AlertCircle } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { supabase } from '@/integrations/supabase/client';
 import { Tenant } from '@/types/tenant';

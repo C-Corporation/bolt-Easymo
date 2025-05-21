@@ -252,7 +252,8 @@ const TenantsTable: React.FC = () => {
       });
 
       // Ajout des sous-totaux au PDF
-      const startY = doc.autoTable.previous.finalY + 10;
+      let finalY = doc.autoTable.lastAutoTable ? doc.autoTable.lastAutoTable.finalY : 20;
+      const startY = finalY + 10;
       doc.setFontSize(10);
       doc.text('Récapitulatif', 14, startY);
       
