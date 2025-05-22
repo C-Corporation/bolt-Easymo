@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Plus, Search, Filter, Download, Upload, MoreHorizontal, Phone, Mail, MapPin, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -161,16 +160,15 @@ export default function TenantsPage() {
       currencyDisplay: 'code'
     }).format(amount).replace('XAF', 'Fcfa');
   };
-  
+
   // Gérer l'ouverture des détails d'un locataire
   const handleOpenTenantDetails = (tenant: TenantWithRequiredId) => {
     setSelectedTenant(tenant);
     setIsDetailsDialogOpen(true);
   };
-  
   return <div className="space-y-6 p-6 px-0 py-0">
       {/* En-tête avec titre et bouton d'ajout - fixé en haut */}
-      <div className="sticky top-0 z-10 bg-[#1a1a1a] pt-6 pb-4 px-6">
+      <div className="sticky top-0 z-10 pt-6 pb-4 px-6 bg-[#1a1a1a]/0">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="font-bold text-4xl text-white">Gestion des locataires</h1>
@@ -179,9 +177,9 @@ export default function TenantsPage() {
             </p>
           </div>
           <Button onClick={() => {
-            setSelectedTenant(null);
-            setIsFormOpen(true);
-          }} className="bg-[#E84A33] hover:bg-[#d43f2a]">
+          setSelectedTenant(null);
+          setIsFormOpen(true);
+        }} className="bg-[#E84A33] hover:bg-[#d43f2a]">
             <Plus className="mr-2 h-4 w-4" />
             Ajouter un locataire
           </Button>
@@ -283,46 +281,36 @@ export default function TenantsPage() {
 
       {/* Formulaire d'ajout/édition */}
       <TenantForm isOpen={isFormOpen} onClose={() => {
-        setIsFormOpen(false);
-        setSelectedTenant(null);
-      }} onSubmit={handleSubmitTenant} initialData={selectedTenant || undefined} />
+      setIsFormOpen(false);
+      setSelectedTenant(null);
+    }} onSubmit={handleSubmitTenant} initialData={selectedTenant || undefined} />
 
       {/* Dialog pour les détails du locataire au lieu de les afficher en dessous */}
-      <Dialog open={isDetailsDialogOpen} onOpenChange={(open) => {
-        setIsDetailsDialogOpen(open);
-        if (!open) setSelectedTenant(null);
-      }}>
+      <Dialog open={isDetailsDialogOpen} onOpenChange={open => {
+      setIsDetailsDialogOpen(open);
+      if (!open) setSelectedTenant(null);
+    }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          {selectedTenant && (
-            <div className="pt-2">
+          {selectedTenant && <div className="pt-2">
               <Button variant="outline" onClick={() => setIsDetailsDialogOpen(false)} className="mb-4">
                 Retour à la liste
               </Button>
-              <Button 
-                variant="outline" 
-                className="mb-4 ml-2" 
-                onClick={() => {
-                  setIsFormOpen(true);
-                  setIsDetailsDialogOpen(false);
-                }}
-              >
+              <Button variant="outline" className="mb-4 ml-2" onClick={() => {
+            setIsFormOpen(true);
+            setIsDetailsDialogOpen(false);
+          }}>
                 <Edit className="mr-2 h-4 w-4" />
                 Modifier
               </Button>
-              <Button 
-                variant="outline" 
-                className="mb-4 ml-2 text-red-500 hover:text-red-700" 
-                onClick={() => handleDeleteTenant(selectedTenant.id)}
-              >
+              <Button variant="outline" className="mb-4 ml-2 text-red-500 hover:text-red-700" onClick={() => handleDeleteTenant(selectedTenant.id)}>
                 <Trash2 className="mr-2 h-4 w-4" />
                 Supprimer
               </Button>
               <TenantDetails tenant={selectedTenant} onClose={() => setIsDetailsDialogOpen(false)} onEdit={() => {
-                setIsFormOpen(true);
-                setIsDetailsDialogOpen(false);
-              }} />
-            </div>
-          )}
+            setIsFormOpen(true);
+            setIsDetailsDialogOpen(false);
+          }} />
+            </div>}
         </DialogContent>
       </Dialog>
     </div>;
