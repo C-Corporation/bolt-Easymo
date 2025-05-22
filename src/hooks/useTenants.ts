@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Tenant } from '@/types/tenant';
@@ -23,17 +22,8 @@ export const useTenants = () => {
         // Convert Supabase data to Tenant type with required fields
         const typedData: Tenant[] = data.map(item => ({
           id: item.id,
-          status: item.status as 'En règle' | 'Pas en règle',
-          unpaid: Number(item.unpaid),
-          location: item.location,
-          observation: item.observation || 'RAS',
-          created_at: item.created_at,
-          updated_at: item.updated_at,
-          // Map the name field to firstName/lastName
           firstName: item.name?.split(' ')[1] || '',
           lastName: item.name?.split(' ')[0] || '',
-          name: item.name,
-          // Add required fields with placeholder values
           email: '',
           phone: '',
           gender: 'Homme',
@@ -44,8 +34,16 @@ export const useTenants = () => {
             id: '',
             address: '',
             rent: 0
-          }
+          },
+          status: item.status as 'En règle' | 'Pas en règle',
+          unpaid: Number(item.unpaid),
+          location: item.location,
+          observation: item.observation || 'RAS',
+          name: item.name,
+          created_at: item.created_at,
+          updated_at: item.updated_at,
         }));
+        
         setTenants(typedData);
       }
     } catch (error) {
@@ -106,13 +104,13 @@ export const useTenants = () => {
       if (error) throw error;
       
       if (data) {
-        // Convert database record to Tenant type
+        // Create a complete tenant by combining DB data and form data
         const newTenant: Tenant = {
           ...tenant,
           id: data[0].id,
           created_at: data[0].created_at,
           updated_at: data[0].updated_at,
-          name: data[0].name
+          name: data[0].name,
         };
         
         setTenants([...tenants, newTenant]);

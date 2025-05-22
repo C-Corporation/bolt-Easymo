@@ -36,20 +36,20 @@ declare module 'jspdf' {
 }
 
 interface SortConfig {
-  key: keyof Tenant | null;
+  key: keyof Tenant | 'fullName' | null;
   direction: 'ascending' | 'descending';
 }
 
 // Interface pour les colonnes
 interface Column {
-  key: keyof Tenant | 'fullName' | 'caution' | 'cautionMonths' | 'arrival_date' | 'updated_at';
+  key: keyof Tenant | 'fullName';
   label: string;
   visible: boolean;
   sortable: boolean;
 }
 
 const TenantsTable: React.FC = () => {
-  const { tenants, loading, fetchTenants } = useTenants();
+  const { tenants, loading, fetchTenants, addTenant } = useTenants();
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     key: null,
     direction: 'ascending',
@@ -221,7 +221,7 @@ const TenantsTable: React.FC = () => {
   };
 
   // Pour les colonnes additionnelles
-  const getCellValue = (tenant: Tenant, key: Column['key']) => {
+  const getCellValue = (tenant: Tenant, key: Column['key']): React.ReactNode => {
     switch (key) {
       case 'fullName':
         return `${tenant.firstName} ${tenant.lastName}`;
@@ -659,7 +659,7 @@ const TenantsTable: React.FC = () => {
       <AddTenantModal 
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        onSubmit={handleAddTenant}
+        onSubmit={addTenant}
       />
       
       {/* Modal d'importation - Avec info format */}

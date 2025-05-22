@@ -54,5 +54,5 @@ export interface Tenant {
   idCardFile?: string;
   contractFile?: string;
   rent?: number;
+  fullName?: string; // Add this field for sorting
 }
-

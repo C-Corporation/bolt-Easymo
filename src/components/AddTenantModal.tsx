@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -69,16 +70,35 @@ const AddTenantModal: React.FC<AddTenantModalProps> = ({ isOpen, onClose, onSubm
   const handleSubmit = async (data: FormValues) => {
     setIsLoading(true);
     try {
-      const success = await onSubmit({
-        ...data,
-        // Add any additional required fields from Tenant type
+      // Make sure all required fields are set with non-optional values
+      const tenantData: Omit<Tenant, 'id' | 'created_at' | 'updated_at'> = {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        phone: data.phone,
+        gender: data.gender,
+        birthDate: data.birthDate,
+        idCardNumber: data.idCardNumber,
+        location: data.location,
+        status: data.status,
+        unpaid: data.unpaid,
+        observation: data.observation || 'RAS',
+        property: {
+          id: data.property.id || '',
+          address: data.property.address,
+          rent: data.property.rent
+        },
+        entryDate: data.entryDate,
+        // Add other required fields with default values
         insurance: {
           company: '',
           policyNumber: '',
           expiryDate: ''
         },
         documents: []
-      });
+      };
+      
+      const success = await onSubmit(tenantData);
       
       if (success) {
         toast({
