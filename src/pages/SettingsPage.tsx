@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,16 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-
 const SettingsPage: React.FC = () => {
-  return (
-    <div className="h-full">
+  return <div className="h-full">
       <div className="bg-white rounded-lg shadow-md p-6">
         <h1 className="text-2xl font-bold mb-6 text-[#2A2F36]">Paramètres</h1>
         
         <Tabs defaultValue="compte" className="w-full">
           <TabsList className="grid grid-cols-4 max-w-xl mb-6">
-            <TabsTrigger value="compte">Compte</TabsTrigger>
+            <TabsTrigger value="compte" className="bg-slate-400 hover:bg-slate-300 text-slate-950">Compte</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="securite">Sécurité</TabsTrigger>
             <TabsTrigger value="facturation">Facturation</TabsTrigger>
@@ -327,8 +324,6 @@ const SettingsPage: React.FC = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default SettingsPage;
