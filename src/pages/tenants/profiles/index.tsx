@@ -18,37 +18,17 @@ import {
 } from '@/components/ui/dropdown-menu';
 import TenantForm from '../components/TenantForm';
 import TenantDetails from '../components/TenantDetails';
+import { Tenant } from '@/types/tenant';
 
-// Type pour les données des locataires
-type Tenant = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  gender: 'Homme' | 'Femme';
-  birthDate: string;
-  idCardNumber: string;
-  entryDate: string;
-  property: {
-    id: string;
-    address: string;
-    rent: number;
-  };
-  emergencyContact?: {
-    name: string;
-    phone: string;
-    relation: string;
-  };
-};
+type TenantWithRequiredId = Tenant & { id: string };
 
 export default function TenantProfiles() {
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
+  const [selectedTenant, setSelectedTenant] = useState<TenantWithRequiredId | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   // Données factices pour l'exemple
-  const tenants: Tenant[] = [
+  const tenants: TenantWithRequiredId[] = [
     {
       id: '1',
       firstName: 'Jean',
@@ -68,7 +48,11 @@ export default function TenantProfiles() {
         name: 'Marie Dupont',
         phone: '06 98 76 54 32',
         relation: 'Épouse'
-      }
+      },
+      status: 'En règle',
+      unpaid: 0,
+      observation: '',
+      location: 'Paris'
     },
     // Ajoutez plus de locataires si nécessaire
   ];
@@ -84,7 +68,7 @@ export default function TenantProfiles() {
     setIsFormOpen(true);
   };
 
-  const handleEditTenant = (tenant: Tenant) => {
+  const handleEditTenant = (tenant: TenantWithRequiredId) => {
     setSelectedTenant(tenant);
     setIsFormOpen(true);
   };

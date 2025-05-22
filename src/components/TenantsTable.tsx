@@ -42,7 +42,7 @@ interface SortConfig {
 
 // Interface pour les colonnes
 interface Column {
-  key: keyof Tenant | 'caution' | 'arrival_date' | 'updated_at' | 'cautionMonths';
+  key: keyof Tenant | 'fullName' | 'caution' | 'cautionMonths' | 'arrival_date' | 'updated_at';
   label: string;
   visible: boolean;
   sortable: boolean;
@@ -69,13 +69,13 @@ const TenantsTable: React.FC = () => {
   
   // Configuration des colonnes avec visibilité (ajout de la colonne Mois de Caution)
   const [columns, setColumns] = useState<Column[]>([
-    { key: 'name', label: 'Nom & Prénom', visible: true, sortable: true },
+    { key: 'fullName', label: 'Nom & Prénom', visible: true, sortable: true },
     { key: 'status', label: 'Situation', visible: true, sortable: true },
     { key: 'unpaid', label: 'Impayés', visible: true, sortable: true },
     { key: 'observation', label: 'Observation', visible: true, sortable: true },
     { key: 'location', label: 'Localisation', visible: true, sortable: true },
     { key: 'caution', label: 'Caution', visible: false, sortable: true },
-    { key: 'cautionMonths', label: 'Mois de Caution', visible: false, sortable: true }, // Nouvelle colonne
+    { key: 'cautionMonths', label: 'Mois de Caution', visible: false, sortable: true }, 
     { key: 'arrival_date', label: "Date d'arrivée", visible: false, sortable: true },
     { key: 'updated_at', label: 'Dernière modification', visible: false, sortable: true },
   ]);
@@ -97,7 +97,7 @@ const TenantsTable: React.FC = () => {
   }, [tenants]);
 
   // Trier les données
-  const sortData = (key: keyof Tenant) => {
+  const sortData = (key: keyof Tenant | 'fullName') => {
     let direction: 'ascending' | 'descending' = 'ascending';
     
     if (sortConfig.key === key && sortConfig.direction === 'ascending') {
@@ -105,13 +105,26 @@ const TenantsTable: React.FC = () => {
     }
     
     const sortedData = [...tenants].sort((a, b) => {
-      if (a[key] < b[key]) {
-        return direction === 'ascending' ? -1 : 1;
+      if (key === 'fullName') {
+        // Handle sorting by fullName (firstName + lastName)
+        const fullNameA = `${a.firstName} ${a.lastName}`;
+        const fullNameB = `${b.firstName} ${b.lastName}`;
+        if (fullNameA < fullNameB) {
+          return direction === 'ascending' ? -1 : 1;
+        }
+        if (fullNameA > fullNameB) {
+          return direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      } else {
+        if (a[key as keyof Tenant] < b[key as keyof Tenant]) {
+          return direction === 'ascending' ? -1 : 1;
+        }
+        if (a[key as keyof Tenant] > b[key as keyof Tenant]) {
+          return direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
       }
-      if (a[key] > b[key]) {
-        return direction === 'ascending' ? 1 : -1;
-      }
-      return 0;
     });
     
     setSortedTenants(sortedData);
@@ -119,7 +132,7 @@ const TenantsTable: React.FC = () => {
   };
   
   // Obtenir l'icône de tri
-  const getSortIcon = (columnName: keyof Tenant) => {
+  const getSortIcon = (columnName: keyof Tenant | 'fullName') => {
     if (sortConfig.key !== columnName) {
       return <div className="w-4 h-4" />;
     }
@@ -210,6 +223,8 @@ const TenantsTable: React.FC = () => {
   // Pour les colonnes additionnelles
   const getCellValue = (tenant: Tenant, key: Column['key']) => {
     switch (key) {
+      case 'fullName':
+        return `${tenant.firstName} ${tenant.lastName}`;
       case 'caution':
         return formatNumber(tenant.caution || 0);
       case 'cautionMonths':
@@ -221,9 +236,6 @@ const TenantsTable: React.FC = () => {
       default:
         if (key === 'unpaid') {
           return formatNumber(tenant[key]);
-        }
-        if (key === 'name' && tenant.firstName) {
-          return `${tenant.name} ${tenant.firstName}`;
         }
         return tenant[key as keyof Tenant] || '-';
     }
@@ -695,9 +707,8 @@ const TenantsTable: React.FC = () => {
     </div>
   );
 
-  // Gestion du soumet pour ajouter un locataire
-  function handleAddTenant(data: Omit<Tenant, 'id' | 'created_at' | 'updated_at'>) {
-    const { addTenant } = useTenants();
+  // Gestion du soumet pour ajouter un locataire - Fix type error
+  function handleAddTenant(data: any) {
     return addTenant(data);
   }
 };

@@ -20,11 +20,31 @@ export const useTenants = () => {
       if (error) throw error;
       
       if (data) {
-        // Assurons-nous que les données correspondent au type Tenant
-        const typedData = data.map(item => ({
-          ...item,
+        // Convert Supabase data to Tenant type with required fields
+        const typedData: Tenant[] = data.map(item => ({
+          id: item.id,
           status: item.status as 'En règle' | 'Pas en règle',
-          unpaid: Number(item.unpaid)
+          unpaid: Number(item.unpaid),
+          location: item.location,
+          observation: item.observation || 'RAS',
+          created_at: item.created_at,
+          updated_at: item.updated_at,
+          // Map the name field to firstName/lastName
+          firstName: item.name?.split(' ')[1] || '',
+          lastName: item.name?.split(' ')[0] || '',
+          name: item.name,
+          // Add required fields with placeholder values
+          email: '',
+          phone: '',
+          gender: 'Homme',
+          birthDate: '',
+          idCardNumber: '',
+          entryDate: '',
+          property: {
+            id: '',
+            address: '',
+            rent: 0
+          }
         }));
         setTenants(typedData);
       }
@@ -69,21 +89,34 @@ export const useTenants = () => {
   // Ajouter un locataire
   const addTenant = async (tenant: Omit<Tenant, 'id' | 'created_at' | 'updated_at'>) => {
     try {
+      // Extract only the fields that exist in the database table
+      const dbRecord = {
+        name: tenant.firstName + ' ' + tenant.lastName,
+        status: tenant.status,
+        unpaid: tenant.unpaid,
+        location: tenant.location,
+        observation: tenant.observation
+      };
+      
       const { data, error } = await supabase
         .from('tenants')
-        .insert([tenant])
+        .insert([dbRecord])
         .select();
 
       if (error) throw error;
       
       if (data) {
-        // Même conversion de type que dans fetchTenants
-        const typedData = {
-          ...data[0],
-          status: data[0].status as 'En règle' | 'Pas en règle',
-          unpaid: Number(data[0].unpaid)
+        // Convert database record to Tenant type
+        const newTenant: Tenant = {
+          ...tenant,
+          id: data[0].id,
+          created_at: data[0].created_at,
+          updated_at: data[0].updated_at,
+          name: data[0].name
         };
-        setTenants([...tenants, typedData]);
+        
+        setTenants([...tenants, newTenant]);
+        
         toast({
           title: 'Succès',
           description: 'Locataire ajouté avec succès',
@@ -105,19 +138,34 @@ export const useTenants = () => {
   // Mettre à jour un locataire
   const updateTenant = async (id: string, tenant: Partial<Tenant>) => {
     try {
+      // Extract only fields that exist in the database
+      const dbRecord: any = {};
+      if (tenant.firstName && tenant.lastName) {
+        dbRecord.name = tenant.firstName + ' ' + tenant.lastName;
+      } else if (tenant.name) {
+        dbRecord.name = tenant.name;
+      }
+      
+      if (tenant.status) dbRecord.status = tenant.status;
+      if (tenant.unpaid !== undefined) dbRecord.unpaid = tenant.unpaid;
+      if (tenant.location) dbRecord.location = tenant.location;
+      if (tenant.observation) dbRecord.observation = tenant.observation;
+      
       const { data, error } = await supabase
         .from('tenants')
-        .update(tenant)
+        .update(dbRecord)
         .eq('id', id)
         .select();
 
       if (error) throw error;
       
       if (data) {
-        const updatedTenant = {
-          ...data[0],
-          status: data[0].status as 'En règle' | 'Pas en règle',
-          unpaid: Number(data[0].unpaid)
+        // Update the tenant in the local state
+        const updatedTenant: Tenant = {
+          ...tenants.find(t => t.id === id)!,
+          ...tenant,
+          name: dbRecord.name || tenants.find(t => t.id === id)?.name,
+          updated_at: data[0].updated_at
         };
         
         setTenants(tenants.map(t => t.id === id ? updatedTenant : t));

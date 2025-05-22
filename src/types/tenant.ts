@@ -40,4 +40,19 @@ export interface Tenant {
   location: string;
   created_at?: string;
   updated_at?: string;
+  
+  // Additional fields needed by components
+  name?: string;
+  photo?: string;
+  phoneNumber?: string;
+  secondName?: string;
+  idCardType?: string;
+  propertyType?: string;
+  caution?: number;
+  cautionMonths?: number;
+  arrival_date?: string;
+  idCardFile?: string;
+  contractFile?: string;
+  rent?: number;
 }
+
