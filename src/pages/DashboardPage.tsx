@@ -70,7 +70,7 @@ const DashboardPage: React.FC = () => {
       {/* En-tête fixe */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="max-w-screen-xl mx-auto w-full">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex justify-between items-left">
             <div className="">
               <h1 className="text-4xl font-bold text-white text-left">Tableau de bord</h1>
               <p className="text-white">Vue d'ensemble de votre portefeuille immobilier</p>
