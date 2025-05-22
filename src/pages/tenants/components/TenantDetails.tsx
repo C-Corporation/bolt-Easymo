@@ -148,15 +148,15 @@ export default function TenantDetails({
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button variant="outline" className="h-24 flex flex-col items-center justify-center gap-2">
+            <Button variant="outline" className="h-24 flex flex-col items-center justify-center gap-2 bg-slate-400 hover:bg-slate-300">
               <CreditCard className="h-6 w-6" />
               <span>Pièce d'identité</span>
             </Button>
-            <Button variant="outline" className="h-24 flex flex-col items-center justify-center gap-2">
+            <Button variant="outline" className="h-24 flex flex-col items-center justify-center gap-2 text-slate-950 bg-slate-400 hover:bg-slate-300">
               <FileText className="h-6 w-6" />
               <span>Contrat de location</span>
             </Button>
-            <Button variant="outline" className="h-24 flex flex-col items-center justify-center gap-2">
+            <Button variant="outline" className="h-24 flex flex-col items-center justify-center gap-2 bg-slate-400 hover:bg-slate-300">
               <FileText className="h-6 w-6" />
               <span>État des lieux d'entrée</span>
             </Button>
