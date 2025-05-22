@@ -138,7 +138,7 @@ const DocumentsPage: React.FC = () => {
         <div className="mt-6">
           <h2 className="text-xl font-semibold mb-4 text-[#2A2F36]">Types de documents</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
-            {['Baux', 'Quittances', 'États des lieux', 'Factures', 'Diagnostics', 'Assurances'].map(type => <div key={type} className="rounded-lg p-4 text-center cursor-pointer bg-[#5d6169]">
+            {['Baux', 'Quittances', 'États des lieux', 'Factures', 'Diagnostics', 'Assurances'].map(type => <div key={type} className="rounded-lg p-4 text-center cursor-pointer bg-gray-400">
                 <FileText className="h-8 w-8 mx-auto mb-2 text-[#E84A33]" />
                 <p className="text-sm font-medium">{type}</p>
               </div>)}
