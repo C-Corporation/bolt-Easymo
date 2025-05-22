@@ -1,64 +1,53 @@
-
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FileText, Download, Trash2, Search, Upload, Filter } from 'lucide-react';
-
 const DocumentsPage: React.FC = () => {
-  const documents = [
-    {
-      id: 1,
-      name: "Contrat de bail - Appartement Paris.pdf",
-      type: "Bail",
-      size: "1.2 MB",
-      date: "15/03/2025",
-      tenant: "Martin Dupont"
-    },
-    {
-      id: 2,
-      name: "État des lieux - Studio Lyon.pdf",
-      type: "État des lieux",
-      size: "3.5 MB",
-      date: "02/02/2025",
-      tenant: "Sophie Lambert"
-    },
-    {
-      id: 3,
-      name: "Quittance Avril 2025 - Maison Marseille.pdf",
-      type: "Quittance",
-      size: "0.8 MB",
-      date: "01/04/2025",
-      tenant: "Thomas Petit"
-    },
-    {
-      id: 4,
-      name: "Attestation d'assurance - T2 Bordeaux.pdf",
-      type: "Assurance",
-      size: "1.5 MB",
-      date: "12/01/2025",
-      tenant: "Julie Martin"
-    },
-    {
-      id: 5,
-      name: "Facture travaux plomberie - Appartement Paris.pdf",
-      type: "Facture",
-      size: "2.1 MB",
-      date: "05/04/2025",
-      tenant: "-"
-    },
-    {
-      id: 6,
-      name: "DPE - Studio Lyon.pdf",
-      type: "Diagnostic",
-      size: "4.2 MB",
-      date: "20/11/2024",
-      tenant: "-"
-    },
-  ];
-
-  return (
-    <div className="h-full">
+  const documents = [{
+    id: 1,
+    name: "Contrat de bail - Appartement Paris.pdf",
+    type: "Bail",
+    size: "1.2 MB",
+    date: "15/03/2025",
+    tenant: "Martin Dupont"
+  }, {
+    id: 2,
+    name: "État des lieux - Studio Lyon.pdf",
+    type: "État des lieux",
+    size: "3.5 MB",
+    date: "02/02/2025",
+    tenant: "Sophie Lambert"
+  }, {
+    id: 3,
+    name: "Quittance Avril 2025 - Maison Marseille.pdf",
+    type: "Quittance",
+    size: "0.8 MB",
+    date: "01/04/2025",
+    tenant: "Thomas Petit"
+  }, {
+    id: 4,
+    name: "Attestation d'assurance - T2 Bordeaux.pdf",
+    type: "Assurance",
+    size: "1.5 MB",
+    date: "12/01/2025",
+    tenant: "Julie Martin"
+  }, {
+    id: 5,
+    name: "Facture travaux plomberie - Appartement Paris.pdf",
+    type: "Facture",
+    size: "2.1 MB",
+    date: "05/04/2025",
+    tenant: "-"
+  }, {
+    id: 6,
+    name: "DPE - Studio Lyon.pdf",
+    type: "Diagnostic",
+    size: "4.2 MB",
+    date: "20/11/2024",
+    tenant: "-"
+  }];
+  return <div className="h-full">
       <div className="bg-white rounded-lg shadow-md p-6">
         <h1 className="text-2xl font-bold mb-6 text-[#2A2F36]">Documents</h1>
         
@@ -96,8 +85,7 @@ const DocumentsPage: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {documents.map(doc => (
-                <TableRow key={doc.id}>
+              {documents.map(doc => <TableRow key={doc.id}>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <FileText className="h-4 w-4 text-[#E84A33]" />
@@ -118,8 +106,7 @@ const DocumentsPage: React.FC = () => {
                       </Button>
                     </div>
                   </TableCell>
-                </TableRow>
-              ))}
+                </TableRow>)}
             </TableBody>
           </Table>
         </div>
@@ -151,17 +138,13 @@ const DocumentsPage: React.FC = () => {
         <div className="mt-6">
           <h2 className="text-xl font-semibold mb-4 text-[#2A2F36]">Types de documents</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
-            {['Baux', 'Quittances', 'États des lieux', 'Factures', 'Diagnostics', 'Assurances'].map(type => (
-              <div key={type} className="bg-gray-50 rounded-lg p-4 text-center hover:bg-gray-100 cursor-pointer">
+            {['Baux', 'Quittances', 'États des lieux', 'Factures', 'Diagnostics', 'Assurances'].map(type => <div key={type} className="rounded-lg p-4 text-center cursor-pointer bg-[#5d6169]">
                 <FileText className="h-8 w-8 mx-auto mb-2 text-[#E84A33]" />
                 <p className="text-sm font-medium">{type}</p>
-              </div>
-            ))}
+              </div>)}
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default DocumentsPage;
