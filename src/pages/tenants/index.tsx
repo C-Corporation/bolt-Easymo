@@ -1,14 +1,8 @@
-
 import { useState } from 'react';
 import { Plus, Search, Filter, Download, Upload, MoreHorizontal, Phone, Mail, MapPin, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import TenantForm from './components/TenantForm';
 import { Tenant } from '@/types/tenant';
 import TenantDetails from './components/TenantDetails';
@@ -16,8 +10,9 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 // Type personnalisé qui étend le type Tenant pour rendre l'ID obligatoire
-type TenantWithRequiredId = Tenant & { id: string };
-
+type TenantWithRequiredId = Tenant & {
+  id: string;
+};
 export default function TenantsPage() {
   // État pour la gestion du formulaire et des détails
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -25,83 +20,72 @@ export default function TenantsPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Données factices pour la démonstration
-  const [tenants, setTenants] = useState<TenantWithRequiredId[]>([
-    {
+  const [tenants, setTenants] = useState<TenantWithRequiredId[]>([{
+    id: '1',
+    firstName: 'Jean',
+    lastName: 'Dupont',
+    email: 'jean.dupont@example.com',
+    phone: '06 12 34 56 78',
+    gender: 'Homme',
+    birthDate: '1985-05-15',
+    idCardNumber: '1234567890123',
+    entryDate: '2023-01-15',
+    property: {
       id: '1',
-      firstName: 'Jean',
-      lastName: 'Dupont',
-      email: 'jean.dupont@example.com',
-      phone: '06 12 34 56 78',
-      gender: 'Homme',
-      birthDate: '1985-05-15',
-      idCardNumber: '1234567890123',
-      entryDate: '2023-01-15',
-      property: {
-        id: '1',
-        address: '12 Rue de la Paix, 75001 Paris',
-        rent: 850,
-      },
-      emergencyContact: {
-        name: 'Marie Dupont',
-        phone: '06 98 76 54 32',
-        relation: 'Épouse',
-      },
-      notes: 'A signalé une fuite dans la salle de bain le 15/03/2023',
-      status: 'En règle',
-      unpaid: 0,
-      observation: 'Paiements toujours à jour',
-      location: 'Paris',
-      insurance: {
-        company: '',
-        policyNumber: '',
-        expiryDate: ''
-      },
-      documents: []
+      address: '12 Rue de la Paix, 75001 Paris',
+      rent: 850
     },
-    {
+    emergencyContact: {
+      name: 'Marie Dupont',
+      phone: '06 98 76 54 32',
+      relation: 'Épouse'
+    },
+    notes: 'A signalé une fuite dans la salle de bain le 15/03/2023',
+    status: 'En règle',
+    unpaid: 0,
+    observation: 'Paiements toujours à jour',
+    location: 'Paris',
+    insurance: {
+      company: '',
+      policyNumber: '',
+      expiryDate: ''
+    },
+    documents: []
+  }, {
+    id: '2',
+    firstName: 'Sophie',
+    lastName: 'Martin',
+    email: 'sophie.martin@example.com',
+    phone: '06 23 45 67 89',
+    gender: 'Femme',
+    birthDate: '1990-08-22',
+    idCardNumber: '9876543210987',
+    entryDate: '2023-03-10',
+    property: {
       id: '2',
-      firstName: 'Sophie',
-      lastName: 'Martin',
-      email: 'sophie.martin@example.com',
-      phone: '06 23 45 67 89',
-      gender: 'Femme',
-      birthDate: '1990-08-22',
-      idCardNumber: '9876543210987',
-      entryDate: '2023-03-10',
-      property: {
-        id: '2',
-        address: '24 Avenue des Champs-Élysées, 75008 Paris',
-        rent: 1200,
-      },
-      emergencyContact: {
-        name: 'Pierre Martin',
-        phone: '06 78 90 12 34',
-        relation: 'Frère',
-      },
-      notes: '',
-      status: 'En règle',
-      unpaid: 0,
-      observation: 'Nouveau locataire',
-      location: 'Paris',
-      insurance: {
-        company: '',
-        policyNumber: '',
-        expiryDate: ''
-      },
-      documents: []
+      address: '24 Avenue des Champs-Élysées, 75008 Paris',
+      rent: 1200
     },
-  ]);
+    emergencyContact: {
+      name: 'Pierre Martin',
+      phone: '06 78 90 12 34',
+      relation: 'Frère'
+    },
+    notes: '',
+    status: 'En règle',
+    unpaid: 0,
+    observation: 'Nouveau locataire',
+    location: 'Paris',
+    insurance: {
+      company: '',
+      policyNumber: '',
+      expiryDate: ''
+    },
+    documents: []
+  }]);
 
   // Filtrer les locataires en fonction de la recherche
-  const filteredTenants = tenants.filter(
-    (tenant) =>
-      `${tenant.firstName} ${tenant.lastName}`
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      tenant.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tenant.phone.includes(searchTerm) ||
-      tenant.property.address.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredTenants = tenants.filter(tenant => `${tenant.firstName} ${tenant.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) || tenant.email.toLowerCase().includes(searchTerm.toLowerCase()) || tenant.phone.includes(searchTerm) || tenant.property.address.toLowerCase().includes(searchTerm.toLowerCase()));
 
   // Gérer l'ajout/mise à jour d'un locataire
   const handleSubmitTenant = (data: Tenant) => {
@@ -115,12 +99,12 @@ export default function TenantsPage() {
       property: {
         id: data.property?.id || '',
         address: data.property?.address || '',
-        rent: data.property?.rent || 0,
+        rent: data.property?.rent || 0
       },
       emergencyContact: data.emergencyContact || {
         name: '',
         phone: '',
-        relation: '',
+        relation: ''
       },
       insurance: data.insurance || {
         company: '',
@@ -129,19 +113,17 @@ export default function TenantsPage() {
       },
       documents: data.documents || []
     } as Tenant;
-
     if (selectedTenant) {
       // Mise à jour d'un locataire existant
-      setTenants(
-        tenants.map((t) =>
-          t.id === selectedTenant.id ? { ...tenantData, id: selectedTenant.id } : t
-        )
-      );
+      setTenants(tenants.map(t => t.id === selectedTenant.id ? {
+        ...tenantData,
+        id: selectedTenant.id
+      } : t));
     } else {
       // Ajout d'un nouveau locataire
       const newTenant: TenantWithRequiredId = {
         ...tenantData,
-        id: Math.random().toString(36).substr(2, 9), // Génère un ID unique
+        id: Math.random().toString(36).substr(2, 9) // Génère un ID unique
       } as TenantWithRequiredId;
       setTenants([...tenants, newTenant]);
     }
@@ -152,7 +134,7 @@ export default function TenantsPage() {
   // Gérer la suppression d'un locataire
   const handleDeleteTenant = (id: string) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce locataire ?')) {
-      setTenants(tenants.filter((tenant) => tenant.id !== id));
+      setTenants(tenants.filter(tenant => tenant.id !== id));
       if (selectedTenant?.id === id) {
         setSelectedTenant(null);
       }
@@ -161,7 +143,9 @@ export default function TenantsPage() {
 
   // Formater la date en français
   const formatDate = (dateString: string) => {
-    return format(new Date(dateString), 'dd/MM/yyyy', { locale: fr });
+    return format(new Date(dateString), 'dd/MM/yyyy', {
+      locale: fr
+    });
   };
 
   // Format currency
@@ -173,24 +157,19 @@ export default function TenantsPage() {
       currencyDisplay: 'code'
     }).format(amount).replace('XAF', 'Fcfa');
   };
-
-  return (
-    <div className="space-y-6 p-6">
+  return <div className="space-y-6 p-6">
       {/* En-tête avec titre et bouton d'ajout */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Gestion des locataires</h1>
+          <h1 className="font-bold text-4xl text-white">Gestion des locataires</h1>
           <p className="text-muted-foreground">
             Gérez les profils de vos locataires et leurs baux
           </p>
         </div>
-        <Button
-          onClick={() => {
-            setSelectedTenant(null);
-            setIsFormOpen(true);
-          }}
-          className="bg-[#E84A33] hover:bg-[#d43f2a]"
-        >
+        <Button onClick={() => {
+        setSelectedTenant(null);
+        setIsFormOpen(true);
+      }} className="bg-[#E84A33] hover:bg-[#d43f2a]">
           <Plus className="mr-2 h-4 w-4" />
           Ajouter un locataire
         </Button>
@@ -200,32 +179,18 @@ export default function TenantsPage() {
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Rechercher un locataire, un email, un téléphone..."
-            className="pl-9 bg-white"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          <Input placeholder="Rechercher un locataire, un email, un téléphone..." className="pl-9 bg-white" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
         </div>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            className="gap-2 hover:bg-[#e84a33] hover:text-white transition-colors duration-200"
-          >
+          <Button variant="outline" className="gap-2 hover:bg-[#e84a33] hover:text-white transition-colors duration-200">
             <Filter className="h-4 w-4" />
             Filtres
           </Button>
-          <Button 
-            variant="outline" 
-            className="gap-2 hover:bg-[#e84a33] hover:text-white transition-colors duration-200"
-          >
+          <Button variant="outline" className="gap-2 hover:bg-[#e84a33] hover:text-white transition-colors duration-200">
             <Download className="h-4 w-4" />
             Exporter
           </Button>
-          <Button 
-            variant="outline" 
-            className="gap-2 hover:bg-[#e84a33] hover:text-white transition-colors duration-200"
-          >
+          <Button variant="outline" className="gap-2 hover:bg-[#e84a33] hover:text-white transition-colors duration-200">
             <Upload className="h-4 w-4" />
             Importer
           </Button>
@@ -233,31 +198,17 @@ export default function TenantsPage() {
       </div>
 
       {/* Grille des locataires - Nouveau design rectangulaire similaire à l'image */}
-      {filteredTenants.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredTenants.map((tenant) => (
-            <div 
-              key={tenant.id}
-              className="group bg-gray-100 rounded-lg hover:shadow-md transition-shadow duration-200 cursor-pointer overflow-hidden"
-              onClick={() => setSelectedTenant(tenant)}
-            >
+      {filteredTenants.length > 0 ? <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredTenants.map(tenant => <div key={tenant.id} className="group bg-gray-100 rounded-lg hover:shadow-md transition-shadow duration-200 cursor-pointer overflow-hidden" onClick={() => setSelectedTenant(tenant)}>
               <div className="flex">
                 {/* Photo du locataire */}
                 <div className="w-1/3 h-32">
                   <div className="h-full w-full bg-gray-300 flex items-center justify-center overflow-hidden">
-                    {tenant.idCardFront ? (
-                      <img 
-                        src={tenant.idCardFront} 
-                        alt={`${tenant.firstName} ${tenant.lastName}`} 
-                        className="h-full w-full object-cover" 
-                      />
-                    ) : (
-                      <div className="h-full w-full flex items-center justify-center bg-gray-300">
+                    {tenant.idCardFront ? <img src={tenant.idCardFront} alt={`${tenant.firstName} ${tenant.lastName}`} className="h-full w-full object-cover" /> : <div className="h-full w-full flex items-center justify-center bg-gray-300">
                         <span className="text-2xl font-semibold text-gray-600">
                           {tenant.firstName.charAt(0)}{tenant.lastName.charAt(0)}
                         </span>
-                      </div>
-                    )}
+                      </div>}
                   </div>
                 </div>
                 
@@ -270,16 +221,12 @@ export default function TenantsPage() {
                         {`${tenant.firstName} ${tenant.lastName}`}
                       </h3>
                       <p className="text-xs text-gray-600">
-                        {tenant.gender} • {format(new Date(tenant.birthDate), 'dd/MM/yyyy', { locale: fr })}
+                        {tenant.gender} • {format(new Date(tenant.birthDate), 'dd/MM/yyyy', {
+                    locale: fr
+                  })}
                       </p>
                     </div>
-                    <span 
-                      className={`text-sm px-2 py-0.5 rounded ${
-                        tenant.status === 'En règle' 
-                          ? 'bg-green-100 text-green-700' 
-                          : 'bg-red-100 text-red-700'
-                      }`}
-                    >
+                    <span className={`text-sm px-2 py-0.5 rounded ${tenant.status === 'En règle' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                       {tenant.status}
                     </span>
                   </div>
@@ -313,47 +260,23 @@ export default function TenantsPage() {
                   </svg>
                 </span>
               </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-12 border rounded-lg bg-gray-50">
-          {searchTerm ? (
-            <p className="text-gray-500">Aucun locataire trouvé pour votre recherche.</p>
-          ) : (
-            <p className="text-gray-500">Aucun locataire enregistré pour le moment.</p>
-          )}
-        </div>
-      )}
+            </div>)}
+        </div> : <div className="text-center py-12 border rounded-lg bg-gray-50">
+          {searchTerm ? <p className="text-gray-500">Aucun locataire trouvé pour votre recherche.</p> : <p className="text-gray-500">Aucun locataire enregistré pour le moment.</p>}
+        </div>}
 
       {/* Formulaire d'ajout/édition */}
-      <TenantForm
-        isOpen={isFormOpen}
-        onClose={() => {
-          setIsFormOpen(false);
-          setSelectedTenant(null);
-        }}
-        onSubmit={handleSubmitTenant}
-        initialData={selectedTenant || undefined}
-      />
+      <TenantForm isOpen={isFormOpen} onClose={() => {
+      setIsFormOpen(false);
+      setSelectedTenant(null);
+    }} onSubmit={handleSubmitTenant} initialData={selectedTenant || undefined} />
 
       {/* Détails du locataire */}
-      {selectedTenant && !isFormOpen && (
-        <div className="mt-8">
-          <Button
-            variant="outline"
-            onClick={() => setSelectedTenant(null)}
-            className="mb-4"
-          >
+      {selectedTenant && !isFormOpen && <div className="mt-8">
+          <Button variant="outline" onClick={() => setSelectedTenant(null)} className="mb-4">
             Retour à la liste
           </Button>
-          <TenantDetails
-            tenant={selectedTenant}
-            onClose={() => setSelectedTenant(null)}
-            onEdit={() => setIsFormOpen(true)}
-          />
-        </div>
-      )}
-    </div>
-  );
+          <TenantDetails tenant={selectedTenant} onClose={() => setSelectedTenant(null)} onEdit={() => setIsFormOpen(true)} />
+        </div>}
+    </div>;
 }
