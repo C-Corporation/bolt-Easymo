@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Plus, Search, Filter, Download, Upload, MoreHorizontal, Phone, Mail, MapPin, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -163,6 +164,16 @@ export default function TenantsPage() {
     return format(new Date(dateString), 'dd/MM/yyyy', { locale: fr });
   };
 
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'XAF',
+      maximumFractionDigits: 0,
+      currencyDisplay: 'code'
+    }).format(amount).replace('XAF', 'Fcfa');
+  };
+
   return (
     <div className="space-y-6 p-6">
       {/* En-tête avec titre et bouton d'ajout */}
@@ -221,70 +232,86 @@ export default function TenantsPage() {
         </div>
       </div>
 
-      {/* Grille des locataires - Design rectangulaire */}
+      {/* Grille des locataires - Nouveau design rectangulaire similaire à l'image */}
       {filteredTenants.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredTenants.map((tenant) => (
             <div 
               key={tenant.id}
-              className="group relative bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow duration-200 cursor-pointer overflow-hidden flex flex-col h-64 w-full"
+              className="group bg-gray-100 rounded-lg hover:shadow-md transition-shadow duration-200 cursor-pointer overflow-hidden"
               onClick={() => setSelectedTenant(tenant)}
             >
-              {/* Contenu principal */}
-              <div className="flex-1 p-4 flex">
+              <div className="flex">
                 {/* Photo du locataire */}
-                <div className="w-1/3 pr-4 flex items-center justify-center">
-                  <div className="h-full w-full bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
-                    <div className="h-20 w-20 rounded-full bg-gradient-to-br from-[#E84A33] to-[#F9A826] flex items-center justify-center text-white text-2xl font-bold">
-                      {tenant.firstName.charAt(0)}{tenant.lastName.charAt(0)}
-                    </div>
+                <div className="w-1/3 h-32">
+                  <div className="h-full w-full bg-gray-300 flex items-center justify-center overflow-hidden">
+                    {tenant.idCardFront ? (
+                      <img 
+                        src={tenant.idCardFront} 
+                        alt={`${tenant.firstName} ${tenant.lastName}`} 
+                        className="h-full w-full object-cover" 
+                      />
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center bg-gray-300">
+                        <span className="text-2xl font-semibold text-gray-600">
+                          {tenant.firstName.charAt(0)}{tenant.lastName.charAt(0)}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 
                 {/* Informations du locataire */}
                 <div className="w-2/3 flex flex-col">
-                  <div className="flex justify-between items-start">
+                  {/* Haut de carte avec nom et statut */}
+                  <div className="bg-gray-200 p-3 flex justify-between items-start">
                     <div>
-                      <h3 className="font-bold text-gray-900 text-lg">
+                      <h3 className="font-bold text-gray-800">
                         {`${tenant.firstName} ${tenant.lastName}`}
                       </h3>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-xs text-gray-600">
                         {tenant.gender} • {format(new Date(tenant.birthDate), 'dd/MM/yyyy', { locale: fr })}
                       </p>
                     </div>
-                    <span className={`text-xs font-medium px-3 py-1 rounded-full ${
-                      tenant.status === 'En règle' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
+                    <span 
+                      className={`text-sm px-2 py-0.5 rounded ${
+                        tenant.status === 'En règle' 
+                          ? 'bg-green-100 text-green-700' 
+                          : 'bg-red-100 text-red-700'
+                      }`}
+                    >
                       {tenant.status}
                     </span>
                   </div>
                   
-                  {/* Séparation */}
-                  <div className="border-t border-gray-200 my-3"></div>
+                  {/* Milieu avec localisation et téléphone */}
+                  <div className="p-3 flex-1 space-y-1">
+                    <p className="text-sm text-gray-600 flex items-center">
+                      <MapPin className="h-3.5 w-3.5 mr-2" />
+                      {tenant.location}
+                    </p>
+                    <p className="text-sm text-gray-600 flex items-center">
+                      <Phone className="h-3.5 w-3.5 mr-2" />
+                      {tenant.phone}
+                    </p>
+                  </div>
                   
-                  {/* Détails */}
-                  <div className="flex-1 flex flex-col justify-between">
-                    <div className="text-sm text-gray-500">
-                      <p>{tenant.location}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-[#E84A33]">{tenant.property.rent} €</p>
-                      <p className="text-xs text-gray-500">Loyer mensuel</p>
-                    </div>
+                  {/* Loyer mensuel */}
+                  <div className="bg-white p-3 flex justify-between items-center">
+                    <span className="text-sm text-gray-500">Loyer mensuel:</span>
+                    <span className="text-base font-bold text-[#E84A33]">{formatCurrency(tenant.property.rent)}</span>
                   </div>
                 </div>
               </div>
               
-              {/* Pied de carte */}
-              <div className="border-t border-gray-200 py-3 px-4 bg-gray-50">
-                <div className="flex items-center justify-center text-[#E84A33] font-medium text-sm uppercase tracking-wide">
-                  Informations
-                  <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              {/* Pied de carte avec lien "Voir plus d'information" */}
+              <div className="bg-gray-700 p-2 text-center">
+                <span className="text-white text-sm flex items-center justify-center">
+                  Voir plus d'information
+                  <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
-                </div>
+                </span>
               </div>
             </div>
           ))}
