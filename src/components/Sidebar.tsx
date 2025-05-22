@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Link, useLocation } from 'react-router-dom';
-import { Table, User } from 'lucide-react';
+import { FileText, Home, Settings, Table, User, PieChart, BarChart2, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface SidebarProps {
@@ -22,18 +22,55 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   const [showSubMenu, setShowSubMenu] = useState(false);
   
   const [menuItems, setMenuItems] = useState<MenuItem[]>([
-    { label: 'Vue globale', path: '/', active: location.pathname === '/', subMenu: false },
+    { 
+      label: 'Vue globale', 
+      path: '/', 
+      active: location.pathname === '/', 
+      subMenu: false,
+      icon: <Home className="w-5 h-5" />
+    },
     { 
       label: 'Locataires', 
       path: '/locataires', 
       active: location.pathname.startsWith('/locataires'), 
-      subMenu: location.pathname.startsWith('/locataires') 
+      subMenu: location.pathname.startsWith('/locataires'),
+      icon: <User className="w-5 h-5" />
     },
-    { label: 'Immobiliers', path: '/immobiliers', active: location.pathname === '/immobiliers', subMenu: false },
-    { label: 'Finances', path: '/finances', active: location.pathname === '/finances', subMenu: false },
-    { label: 'Documents', path: '/documents', active: location.pathname === '/documents', subMenu: false },
-    { label: 'Paramètres', path: '/parametres', active: location.pathname === '/parametres', subMenu: false },
-    { label: 'Déconnexion', path: '/logout', active: false, subMenu: false },
+    { 
+      label: 'Immobiliers', 
+      path: '/immobiliers', 
+      active: location.pathname === '/immobiliers', 
+      subMenu: false,
+      icon: <Home className="w-5 h-5" />
+    },
+    { 
+      label: 'Finances', 
+      path: '/finances', 
+      active: location.pathname === '/finances', 
+      subMenu: false,
+      icon: <BarChart2 className="w-5 h-5" />
+    },
+    { 
+      label: 'Documents', 
+      path: '/documents', 
+      active: location.pathname === '/documents', 
+      subMenu: false,
+      icon: <FileText className="w-5 h-5" />
+    },
+    { 
+      label: 'Paramètres', 
+      path: '/parametres', 
+      active: location.pathname === '/parametres', 
+      subMenu: false,
+      icon: <Settings className="w-5 h-5" />
+    },
+    { 
+      label: 'Déconnexion', 
+      path: '/logout', 
+      active: false, 
+      subMenu: false,
+      icon: <LogOut className="w-5 h-5" />
+    },
   ]);
 
   // Mettre à jour l'état actif des éléments du menu
@@ -68,13 +105,13 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   // Sous-menu pour les locataires
   const tenantSubMenuItems = [
     { 
-      label: '', 
+      label: 'Profils', 
       path: '/locataires/profils', 
       icon: <User className="w-5 h-5" />,
       isActive: location.pathname === '/locataires/profils'
     },
     { 
-      label: '', 
+      label: 'Tableau', 
       path: '/locataires/tableau', 
       icon: <Table className="w-5 h-5" />,
       isActive: location.pathname === '/locataires/tableau'
@@ -106,7 +143,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                     <motion.button
                       onClick={toggleSubMenu}
                       className={cn(
-                        "flex items-center justify-center rounded-lg px-4 py-2 sm:py-2.5 md:py-3 text-sm font-medium min-h-[36px] md:min-h-[44px] transition-colors",
+                        "flex items-center justify-between rounded-lg px-4 py-2 sm:py-2.5 md:py-3 text-sm font-medium min-h-[36px] md:min-h-[44px] transition-colors w-full",
                         item.active
                           ? "bg-[#E84A33] text-white"
                           : "bg-[#9CA3AF] text-white hover:bg-[#9095A1]"
@@ -116,7 +153,10 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                       }}
                       transition={{ duration: 0.3, ease: "easeInOut" }}
                     >
-                      {item.label}
+                      <div className="flex items-center">
+                        {item.icon}
+                        <span className="ml-2">{item.label}</span>
+                      </div>
                     </motion.button>
                     
                     <AnimatePresence>
@@ -137,15 +177,17 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                             >
                               <Link
                                 to={subItem.path}
-                                className={`flex items-center justify-center rounded-lg p-2 min-h-[44px] min-w-[44px] transition-colors ${
+                                className={`flex flex-col items-center justify-center rounded-lg p-2 min-h-[44px] min-w-[44px] transition-colors ${
                                   subItem.isActive 
                                     ? 'bg-[#E84A33] text-white hover:bg-[#E84A33]' 
                                     : 'bg-[#9CA3AF] text-white hover:bg-[#E84A33] hover:text-white'
                                 }`}
+                                title={subItem.label}
                               >
                                 <span className="flex-shrink-0">
                                   {subItem.icon}
                                 </span>
+                                <span className="text-[10px] mt-1">{subItem.label}</span>
                               </Link>
                             </motion.div>
                           ))}
@@ -163,13 +205,14 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                 <Link
                   to={item.path}
                   className={cn(
-                    "flex items-center justify-center rounded-lg px-4 py-2 sm:py-2.5 md:py-3 text-sm font-medium transition-colors w-full min-h-[36px] md:min-h-[44px]",
+                    "flex items-center rounded-lg px-4 py-2 sm:py-2.5 md:py-3 text-sm font-medium transition-colors w-full min-h-[36px] md:min-h-[44px]",
                     item.active
                       ? "bg-[#E84A33] text-white"
                       : "bg-[#9CA3AF] text-white hover:bg-[#9CA3AF]/80"
                   )}
                 >
-                  {item.label}
+                  {item.icon}
+                  <span className="ml-2">{item.label}</span>
                 </Link>
               </li>
             );
