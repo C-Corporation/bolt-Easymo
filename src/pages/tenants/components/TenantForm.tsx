@@ -120,7 +120,7 @@ export default function TenantForm({
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-slate-500">
         <DialogHeader>
           <div className="flex justify-between items-center">
-            <DialogTitle>
+            <DialogTitle className="text-slate-950">
               {initialData ? 'Modifier le locataire' : 'Ajouter un nouveau locataire'}
             </DialogTitle>
             <Button variant="ghost" size="icon" onClick={onClose}>
@@ -133,12 +133,12 @@ export default function TenantForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Informations personnelles */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Informations personnelles</h3>
+              <h3 className="text-lg font-medium text-slate-950">Informations personnelles</h3>
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">Prénom *</Label>
-                  <Input id="firstName" name="firstName" value={formData.firstName} onChange={handleChange} required />
+                  <Label htmlFor="firstName" className="bg-[#000a0e]/0">Prénom *</Label>
+                  <Input id="firstName" name="firstName" value={formData.firstName} onChange={handleChange} required className="bg-zinc-800" />
                 </div>
                 
                 <div className="space-y-2">
@@ -196,7 +196,7 @@ export default function TenantForm({
 
             {/* Coordonnées */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Coordonnées</h3>
+              <h3 className="text-lg font-medium text-slate-950">Coordonnées</h3>
               
               <div className="space-y-2">
                 <Label htmlFor="email">Email *</Label>
