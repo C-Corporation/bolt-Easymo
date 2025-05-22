@@ -4,24 +4,27 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Edit, ArrowLeft, Mail, Phone, Home, Calendar, FileText, User, CreditCard } from 'lucide-react';
 import { Tenant } from '@/types/tenant';
-
-type TenantWithRequiredId = Tenant & { id: string };
-
+type TenantWithRequiredId = Tenant & {
+  id: string;
+};
 type TenantDetailsProps = {
   tenant: TenantWithRequiredId;
   onClose: () => void;
   onEdit: () => void;
 };
-
-export default function TenantDetails({ tenant, onClose, onEdit }: TenantDetailsProps) {
+export default function TenantDetails({
+  tenant,
+  onClose,
+  onEdit
+}: TenantDetailsProps) {
   const formatDate = (dateString: string) => {
-    return format(new Date(dateString), 'PPP', { locale: fr });
+    return format(new Date(dateString), 'PPP', {
+      locale: fr
+    });
   };
-
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <Button variant="ghost" onClick={onClose} className="gap-2">
+        <Button variant="ghost" onClick={onClose} className="gap-2 text-slate-950">
           <ArrowLeft className="h-4 w-4" />
           Retour à la liste
         </Button>
@@ -82,8 +85,7 @@ export default function TenantDetails({ tenant, onClose, onEdit }: TenantDetails
               </a>
             </div>
             
-            {tenant.emergencyContact && (
-              <div className="mt-6 space-y-2">
+            {tenant.emergencyContact && <div className="mt-6 space-y-2">
                 <p className="text-sm font-medium">Contact d'urgence</p>
                 <div className="bg-muted/50 p-4 rounded-md space-y-2">
                   <div>
@@ -101,8 +103,7 @@ export default function TenantDetails({ tenant, onClose, onEdit }: TenantDetails
                     <p>{tenant.emergencyContact.relation}</p>
                   </div>
                 </div>
-              </div>
-            )}
+              </div>}
           </CardContent>
         </Card>
 
@@ -130,9 +131,7 @@ export default function TenantDetails({ tenant, onClose, onEdit }: TenantDetails
             <div>
               <p className="text-sm text-muted-foreground">Durée de location</p>
               <p className="font-medium">
-                Depuis {formatDate(tenant.entryDate)} ({
-                  Math.floor((new Date().getTime() - new Date(tenant.entryDate).getTime()) / (1000 * 60 * 60 * 24 * 30))
-                } mois)
+                Depuis {formatDate(tenant.entryDate)} ({Math.floor((new Date().getTime() - new Date(tenant.entryDate).getTime()) / (1000 * 60 * 60 * 24 * 30))} mois)
               </p>
             </div>
           </CardContent>
@@ -181,8 +180,7 @@ export default function TenantDetails({ tenant, onClose, onEdit }: TenantDetails
       </Card>
 
       {/* Notes */}
-      {tenant.notes && (
-        <Card>
+      {tenant.notes && <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <FileText className="h-5 w-5" />
@@ -192,8 +190,6 @@ export default function TenantDetails({ tenant, onClose, onEdit }: TenantDetails
           <CardContent>
             <div className="whitespace-pre-line">{tenant.notes}</div>
           </CardContent>
-        </Card>
-      )}
-    </div>
-  );
+        </Card>}
+    </div>;
 }

@@ -290,15 +290,15 @@ export default function TenantsPage() {
       setIsDetailsDialogOpen(open);
       if (!open) setSelectedTenant(null);
     }}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-slate-100">
           {selectedTenant && <div className="pt-2">
-              <Button variant="outline" onClick={() => setIsDetailsDialogOpen(false)} className="mb-4">
+              <Button variant="outline" onClick={() => setIsDetailsDialogOpen(false)} className="mb-4 text-slate-950">
                 Retour à la liste
               </Button>
-              <Button variant="outline" className="mb-4 ml-2" onClick={() => {
+              <Button variant="outline" onClick={() => {
             setIsFormOpen(true);
             setIsDetailsDialogOpen(false);
-          }}>
+          }} className="mb-4 ml-2 text-slate-950">
                 <Edit className="mr-2 h-4 w-4" />
                 Modifier
               </Button>
