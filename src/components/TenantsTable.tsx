@@ -233,11 +233,35 @@ const TenantsTable: React.FC = () => {
         return tenant.arrival_date ? format(new Date(tenant.arrival_date), 'dd/MM/yyyy') : '-';
       case 'updated_at':
         return tenant.updated_at ? format(new Date(tenant.updated_at), 'dd/MM/yyyy HH:mm') : '-';
-      default:
-        if (key === 'unpaid') {
-          return formatNumber(tenant[key]);
+      case 'property':
+        // Handle property object by displaying a string representation
+        if (tenant.property && typeof tenant.property === 'object') {
+          return tenant.property.address || JSON.stringify(tenant.property);
         }
-        return tenant[key as keyof Tenant] || '-';
+        return '-';
+      default:
+        // For other complex objects, convert them to string representations
+        const value = tenant[key as keyof Tenant];
+        if (value === null || value === undefined) {
+          return '-';
+        }
+        
+        if (typeof value === 'object') {
+          // For arrays (like documents)
+          if (Array.isArray(value)) {
+            return `${value.length} éléments`;
+          }
+          // For other objects, return a string representation
+          return JSON.stringify(value);
+        }
+        
+        // For unpaid (number), format with thousand separators
+        if (key === 'unpaid' && typeof value === 'number') {
+          return formatNumber(value);
+        }
+        
+        // For primitive values
+        return value;
     }
   };
 
