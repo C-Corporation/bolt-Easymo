@@ -68,7 +68,7 @@ const DashboardPage: React.FC = () => {
   }];
   return <div className="flex flex-col min-h-0 h-full">
       {/* En-tête fixe */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#2a2f36] py-[24px]">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="max-w-screen-xl mx-auto w-full">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex-1">
@@ -77,9 +77,7 @@ const DashboardPage: React.FC = () => {
             </div>
             <div className="flex-shrink-0">
               <Button asChild>
-                <Link to="/locataires/ajouter" className="bg-[#E84A33] hover:bg-[#d43f2a] whitespace-nowrap">
-                  Ajouter un locataire
-                </Link>
+                
               </Button>
             </div>
           </div>
