@@ -68,11 +68,11 @@ const DashboardPage: React.FC = () => {
   }];
   return <div className="flex flex-col min-h-0 h-full">
       {/* En-tête fixe */}
-      <div className="bg-[#2A2F36] p-6 px-0">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#2a2f36] py-[24px]">
         <div className="max-w-screen-xl mx-auto w-full">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex-1">
-              <h1 className="text-4xl font-bold text-white">Tableau de bord</h1>
+              <h1 className="text-4xl font-bold text-white text-left">Tableau de bord</h1>
               <p className="text-white">Vue d'ensemble de votre portefeuille immobilier</p>
             </div>
             <div className="flex-shrink-0">
