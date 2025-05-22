@@ -55,7 +55,7 @@ const DocumentsPage: React.FC = () => {
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-            <Input type="text" placeholder="Rechercher un document..." className="pl-9" />
+            <Input type="text" placeholder="Rechercher un document..." className="pl-9 bg-white" />
           </div>
           
           <div className="flex gap-2">
