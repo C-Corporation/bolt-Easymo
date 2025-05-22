@@ -13,7 +13,7 @@ const SettingsPage: React.FC = () => {
         
         <Tabs defaultValue="compte" className="w-full">
           <TabsList className="grid grid-cols-4 max-w-xl mb-6">
-            <TabsTrigger value="compte" className="bg-slate-400 hover:bg-slate-300 text-slate-950">Compte</TabsTrigger>
+            <TabsTrigger value="compte" className="text-[e84a33] bg-[#e84a33] text-slate-50">Compte</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="securite">Sécurité</TabsTrigger>
             <TabsTrigger value="facturation">Facturation</TabsTrigger>
@@ -32,22 +32,22 @@ const SettingsPage: React.FC = () => {
                 <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                   <div className="w-full sm:w-1/2 space-y-2">
                     <Label htmlFor="firstname">Prénom</Label>
-                    <Input id="firstname" defaultValue="Philippe" />
+                    <Input id="firstname" defaultValue="Philippe" className="bg-slate-50" />
                   </div>
                   <div className="w-full sm:w-1/2 space-y-2">
                     <Label htmlFor="lastname">Nom</Label>
-                    <Input id="lastname" defaultValue="ZEKE" />
+                    <Input id="lastname" defaultValue="ZEKE" className="bg-slate-50" />
                   </div>
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" defaultValue="philippe.zeke@example.com" />
+                  <Input id="email" type="email" defaultValue="philippe.zeke@example.com" className="bg-slate-50" />
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="phone">Téléphone</Label>
-                  <Input id="phone" type="tel" defaultValue="06 12 34 56 78" />
+                  <Input id="phone" type="tel" defaultValue="06 12 34 56 78" className="bg-slate-50" />
                 </div>
                 
                 <div className="flex justify-end">
@@ -66,17 +66,17 @@ const SettingsPage: React.FC = () => {
               <CardContent className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="address">Adresse</Label>
-                  <Input id="address" defaultValue="15 rue des Lilas" />
+                  <Input id="address" defaultValue="15 rue des Lilas" className="bg-slate-50" />
                 </div>
                 
                 <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                   <div className="w-full sm:w-1/3 space-y-2">
                     <Label htmlFor="postal">Code postal</Label>
-                    <Input id="postal" defaultValue="75020" />
+                    <Input id="postal" defaultValue="75020" className="bg-slate-50" />
                   </div>
                   <div className="w-full sm:w-2/3 space-y-2">
                     <Label htmlFor="city">Ville</Label>
-                    <Input id="city" defaultValue="Paris" />
+                    <Input id="city" defaultValue="Paris" className="bg-slate-50" />
                   </div>
                 </div>
                 
