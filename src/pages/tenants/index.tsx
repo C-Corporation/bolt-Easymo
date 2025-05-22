@@ -157,7 +157,7 @@ export default function TenantsPage() {
       currencyDisplay: 'code'
     }).format(amount).replace('XAF', 'Fcfa');
   };
-  return <div className="space-y-6 p-6">
+  return <div className="space-y-6 p-6 px-0 py-0">
       {/* En-tête avec titre et bouton d'ajout */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
