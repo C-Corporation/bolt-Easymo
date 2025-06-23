@@ -237,7 +237,7 @@ export default function TenantForm({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="property.rent">Loyer mensuel (€) *</Label>
+                <Label htmlFor="property.rent">Loyer mensuel (FCFA) *</Label>
                 <Input id="property.rent" name="property.rent" type="number" value={formData.property.rent || ''} onChange={handleChange} required />
               </div>
 

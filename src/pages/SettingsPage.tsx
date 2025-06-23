@@ -6,11 +6,48 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-const SettingsPage: React.FC = () => {
-  return <div className="h-full">
+import { EmptyProfileState } from "@/components/empty-states/empty-profile";
+import { useProfile } from "@/hooks/useProfile";
+import type { Profile } from "@/types/profile";
+
+interface SettingsPageProps {}
+
+const SettingsPage: React.FC<SettingsPageProps> = () => {
+  const { profile, loading, error, updateProfile } = useProfile();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return <EmptyProfileState />;
+  }
+
+  const handleProfileUpdate = async (updates: Partial<Profile>) => {
+    try {
+      await updateProfile(updates);
+    } catch (err) {
+      console.error('Erreur lors de la mise à jour du profil:', err);
+    }
+  };
+
+  return (
+    <div className="h-full">
       <div className="bg-white rounded-lg shadow-md p-6">
         <h1 className="text-2xl font-bold mb-6 text-[#2A2F36]">Paramètres</h1>
-        
+
         <Tabs defaultValue="compte" className="w-full">
           <TabsList className="grid grid-cols-4 max-w-xl mb-6">
             <TabsTrigger value="compte" className="text-[e84a33] bg-[#e84a33] text-slate-50">Compte</TabsTrigger>
@@ -18,8 +55,7 @@ const SettingsPage: React.FC = () => {
             <TabsTrigger value="securite">Sécurité</TabsTrigger>
             <TabsTrigger value="facturation">Facturation</TabsTrigger>
           </TabsList>
-          
-          {/* Paramètres du compte */}
+
           <TabsContent value="compte">
             <Card>
               <CardHeader>
@@ -32,30 +68,52 @@ const SettingsPage: React.FC = () => {
                 <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                   <div className="w-full sm:w-1/2 space-y-2">
                     <Label htmlFor="firstname">Prénom</Label>
-                    <Input id="firstname" defaultValue="Philippe" className="bg-slate-50" />
+                    <Input 
+                      id="firstname" 
+                      defaultValue={profile.first_name}
+                      className="bg-slate-50"
+                      onChange={(e) => handleProfileUpdate({ first_name: e.target.value })}
+                    />
                   </div>
                   <div className="w-full sm:w-1/2 space-y-2">
                     <Label htmlFor="lastname">Nom</Label>
-                    <Input id="lastname" defaultValue="ZEKE" className="bg-slate-50" />
+                    <Input 
+                      id="lastname" 
+                      defaultValue={profile.last_name}
+                      className="bg-slate-50"
+                      onChange={(e) => handleProfileUpdate({ last_name: e.target.value })}
+                    />
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" defaultValue="philippe.zeke@example.com" className="bg-slate-50" />
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    defaultValue={profile.email}
+                    className="bg-slate-50"
+                    onChange={(e) => handleProfileUpdate({ email: e.target.value })}
+                  />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="phone">Téléphone</Label>
-                  <Input id="phone" type="tel" defaultValue="06 12 34 56 78" className="bg-slate-50" />
+                  <Input 
+                    id="phone" 
+                    type="tel" 
+                    defaultValue={profile.phone}
+                    className="bg-slate-50"
+                    onChange={(e) => handleProfileUpdate({ phone: e.target.value })}
+                  />
                 </div>
-                
+
                 <div className="flex justify-end">
                   <Button className="bg-[#E84A33] hover:bg-[#E84A33]/90">Enregistrer les modifications</Button>
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card className="mt-6">
               <CardHeader>
                 <CardTitle>Adresse postale</CardTitle>
@@ -66,28 +124,42 @@ const SettingsPage: React.FC = () => {
               <CardContent className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="address">Adresse</Label>
-                  <Input id="address" defaultValue="15 rue des Lilas" className="bg-slate-50" />
+                  <Input 
+                    id="address" 
+                    defaultValue={profile.address}
+                    className="bg-slate-50"
+                    onChange={(e) => handleProfileUpdate({ address: e.target.value })}
+                  />
                 </div>
-                
+
                 <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                   <div className="w-full sm:w-1/3 space-y-2">
                     <Label htmlFor="postal">Code postal</Label>
-                    <Input id="postal" defaultValue="75020" className="bg-slate-50" />
+                    <Input 
+                      id="postal" 
+                      defaultValue={profile.postal_code}
+                      className="bg-slate-50"
+                      onChange={(e) => handleProfileUpdate({ postal_code: e.target.value })}
+                    />
                   </div>
                   <div className="w-full sm:w-2/3 space-y-2">
                     <Label htmlFor="city">Ville</Label>
-                    <Input id="city" defaultValue="Paris" className="bg-slate-50" />
+                    <Input 
+                      id="city" 
+                      defaultValue={profile.city}
+                      className="bg-slate-50"
+                      onChange={(e) => handleProfileUpdate({ city: e.target.value })}
+                    />
                   </div>
                 </div>
-                
+
                 <div className="flex justify-end">
                   <Button className="bg-[#E84A33] hover:bg-[#E84A33]/90">Enregistrer l'adresse</Button>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
-          
-          {/* Paramètres des notifications */}
+
           <TabsContent value="notifications">
             <Card>
               <CardHeader>
@@ -165,7 +237,6 @@ const SettingsPage: React.FC = () => {
             </Card>
           </TabsContent>
           
-          {/* Paramètres de sécurité */}
           <TabsContent value="securite">
             <Card>
               <CardHeader>
@@ -235,7 +306,6 @@ const SettingsPage: React.FC = () => {
             </Card>
           </TabsContent>
           
-          {/* Paramètres de facturation */}
           <TabsContent value="facturation">
             <Card>
               <CardHeader>
@@ -253,7 +323,7 @@ const SettingsPage: React.FC = () => {
                         <p className="text-sm text-gray-500">Facturé annuellement</p>
                       </div>
                       <div className="mt-2 md:mt-0">
-                        <p className="font-bold text-xl">29,99 € <span className="text-sm font-normal text-gray-500">/mois</span></p>
+                        <p className="font-bold text-xl">19 670 FCFA <span className="text-sm font-normal text-gray-500">/mois</span></p>
                       </div>
                     </div>
                     <div className="mt-4 flex justify-between items-center">
@@ -303,14 +373,14 @@ const SettingsPage: React.FC = () => {
                           <tr>
                             <td className="px-4 py-3">FAC-2025-042</td>
                             <td className="px-4 py-3">15/04/2025</td>
-                            <td className="px-4 py-3">359,88 €</td>
+                            <td className="px-4 py-3">236 040 FCFA</td>
                             <td className="px-4 py-3"><span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Payé</span></td>
                             <td className="px-4 py-3 text-right"><Button variant="ghost" size="sm">PDF</Button></td>
                           </tr>
                           <tr>
                             <td className="px-4 py-3">FAC-2024-042</td>
                             <td className="px-4 py-3">15/04/2024</td>
-                            <td className="px-4 py-3">359,88 €</td>
+                            <td className="px-4 py-3">236 040 FCFA</td>
                             <td className="px-4 py-3"><span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Payé</span></td>
                             <td className="px-4 py-3 text-right"><Button variant="ghost" size="sm">PDF</Button></td>
                           </tr>
@@ -324,6 +394,8 @@ const SettingsPage: React.FC = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default SettingsPage;

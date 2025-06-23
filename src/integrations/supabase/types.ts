@@ -4,7 +4,7 @@ export type Json =
   | boolean
   | null
   | { [key: string]: Json | undefined }
-  | Json[]
+  | Json[];
 
 export type Database = {
   public: {
@@ -77,6 +77,92 @@ export type Database = {
         }
         Relationships: []
       }
+      documents: {
+        Row: {
+          id: string
+          name: string
+          type: string | null
+          file_url: string
+          upload_date: string | null
+          property_id: string | null
+          tenant_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          type?: string | null
+          file_url: string
+          upload_date?: string | null
+          property_id?: string | null
+          tenant_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          type?: string | null
+          file_url?: string
+          upload_date?: string | null
+          property_id?: string | null
+          tenant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_property_id_fkey"
+            columns: ["property_id"]
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_tenant_id_fkey"
+            columns: ["tenant_id"]
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      properties: {
+        Row: {
+          id: string
+          address: string
+          type: string | null
+          surface: number | null
+          rent: number | null
+          charges: number | null
+          status: string | null
+          purchase_price: number | null
+          purchase_date: string | null
+          notes: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          address: string
+          type?: string | null
+          surface?: number | null
+          rent?: number | null
+          charges?: number | null
+          status?: string | null
+          purchase_price?: number | null
+          purchase_date?: string | null
+          notes?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          address?: string
+          type?: string | null
+          surface?: number | null
+          rent?: number | null
+          charges?: number | null
+          status?: string | null
+          purchase_price?: number | null
+          purchase_date?: string | null
+          notes?: string | null
+        }
+        Relationships: []
+      }
       produits: {
         Row: {
           categorie_id: number | null
@@ -106,35 +192,46 @@ export type Database = {
       tenants: {
         Row: {
           created_at: string
+          email: string | null
+          entry_date: string | null
+          exit_date: string | null
+          first_name: string
           id: string
-          location: string
-          name: string
-          observation: string | null
-          status: string
-          unpaid: number
-          updated_at: string
+          last_name: string
+          phone_number: string | null
+          property_id: string | null
         }
         Insert: {
           created_at?: string
+          email?: string | null
+          entry_date?: string | null
+          exit_date?: string | null
+          first_name: string
           id?: string
-          location: string
-          name: string
-          observation?: string | null
-          status: string
-          unpaid?: number
-          updated_at?: string
+          last_name: string
+          phone_number?: string | null
+          property_id?: string | null
         }
         Update: {
           created_at?: string
+          email?: string | null
+          entry_date?: string | null
+          exit_date?: string | null
+          first_name?: string
           id?: string
-          location?: string
-          name?: string
-          observation?: string | null
-          status?: string
-          unpaid?: number
-          updated_at?: string
+          last_name?: string
+          phone_number?: string | null
+          property_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tenants_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {

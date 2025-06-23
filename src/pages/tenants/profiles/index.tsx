@@ -150,7 +150,7 @@ export default function TenantProfiles() {
                 <TableCell className="max-w-[200px] truncate">
                   {tenant.property.address}
                 </TableCell>
-                <TableCell>{tenant.property.rent} €</TableCell>
+                <TableCell>{new Intl.NumberFormat('fr-FR', {maximumFractionDigits: 0}).format(tenant.property.rent * 655)} FCFA</TableCell>
                 <TableCell>
                   {new Date(tenant.entryDate).toLocaleDateString('fr-FR')}
                 </TableCell>

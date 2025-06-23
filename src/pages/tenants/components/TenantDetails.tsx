@@ -122,7 +122,7 @@ export default function TenantDetails({
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Loyer mensuel</p>
-              <p className="font-medium">{tenant.property.rent} €</p>
+              <p className="font-medium">{new Intl.NumberFormat('fr-FR', {maximumFractionDigits: 0}).format(tenant.property.rent * 655)} FCFA</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Date d'entrée</p>

@@ -1,58 +1,14 @@
+import type { Database } from "@/integrations/supabase/types";
 
-export interface Tenant {
-  id?: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  gender: 'Homme' | 'Femme' | 'Autre';
-  birthDate: string;
-  idCardNumber: string;
-  idCardFront?: string;
-  idCardBack?: string;
-  entryDate: string;
-  property: {
-    id: string;
-    address: string;
-    rent: number;
-  };
-  emergencyContact?: {
-    name: string;
-    phone: string;
-    relation: string;
-  };
-  insurance?: {
-    company: string;
-    policyNumber: string;
-    expiryDate: string;
-  };
-  documents?: Array<{
-    id: string;
-    name: string;
-    url: string;
-    type: string;
-    uploadedAt: string;
-  }>;
-  notes?: string;
-  status: 'En règle' | 'Pas en règle';
-  unpaid: number;
-  observation: string;
-  location: string;
-  created_at?: string;
-  updated_at?: string;
-  
-  // Additional fields needed by components
-  name?: string;
-  photo?: string;
-  phoneNumber?: string;
-  secondName?: string;
-  idCardType?: string;
-  propertyType?: string;
-  caution?: number;
-  cautionMonths?: number;
-  arrival_date?: string;
-  idCardFile?: string;
-  contractFile?: string;
-  rent?: number;
-  fullName?: string; // Add this field for sorting
-}
+/**
+ * Represents a single tenant row from the 'tenants' table.
+ * This type is derived directly from the auto-generated Supabase schema,
+ * ensuring it's always in sync with the database.
+ */
+export type Tenant = Database["public"]["Tables"]["tenants"]["Row"];
+
+// The input type for creating a new tenant, omitting db-generated fields
+export type TenantInsert = Omit<Tenant, 'id' | 'created_at'>;
+
+// The input type for updating a tenant, all fields are partial
+export type TenantUpdate = Partial<Omit<Tenant, 'id' | 'created_at'>>;
