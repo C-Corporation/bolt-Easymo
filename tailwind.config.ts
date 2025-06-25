@@ -20,6 +20,7 @@ export default {
 		},
 		extend: {
 			colors: {
+				'primary-hover': '#e84a33',
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',

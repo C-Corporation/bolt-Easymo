@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { EmptyState } from '@/components/common/EmptyState';
-import { DollarSign, Plus } from 'lucide-react';
+import { ArrowRightLeft } from 'lucide-react'; // Icône de flèche pour les transactions
 import { useTransactions } from '@/hooks/useTransactions';
 import { AddTransactionDialog } from '@/components/transactions/AddTransactionDialog';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,12 +35,8 @@ const FinancesPage: React.FC = () => {
 
   return (
     <div className="h-full p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6">
         <h1 className="text-2xl font-bold text-[#2A2F36]">Finances</h1>
-        <Button onClick={() => setIsAddDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Ajouter une transaction
-        </Button>
       </div>
 
       {loading ? (
@@ -53,7 +49,9 @@ const FinancesPage: React.FC = () => {
           description="Commencez par ajouter vos revenus et dépenses pour suivre la santé financière de votre parc immobilier."
           buttonText="Ajouter une transaction"
           onButtonClick={() => { /* TODO: Open add transaction dialog */ }}
-          icon={<DollarSign className="w-16 h-16" />}
+          icon={<div className="p-3 rounded-full bg-primary/10">
+            <ArrowRightLeft className="w-12 h-12 text-primary" />
+          </div>}
         />
       ) : (
         <div className="bg-white rounded-lg shadow-md p-6">

@@ -96,10 +96,108 @@ CREATE TABLE IF NOT EXISTS public.rent_payments (
 -- Stores user-specific data, extending Supabase's auth users.
 CREATE TABLE IF NOT EXISTS public.profiles (
   id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  username text UNIQUE,
   full_name text,
   avatar_url text,
   email text UNIQUE,
   updated_at timestamptz
+);
+
+-- Function to create a profile for a new user
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = public
+AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, username)
+  VALUES (new.id, new.email, new.raw_user_meta_data->>'display_name');
+  
+  -- Mettre à jour le display_name dans auth.users
+  UPDATE auth.users 
+  SET raw_user_meta_data = jsonb_set(
+    COALESCE(raw_user_meta_data, '{}'::jsonb),
+    '{display_name}',
+    to_jsonb(COALESCE(new.raw_user_meta_data->>'display_name', ''))
+  )
+  WHERE id = new.id;
+  
+  RETURN new;
+END;
+$$;
+
+-- Trigger to execute the function after a new user is created
+CREATE OR REPLACE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- Row-Level Security (RLS) Policies
+-- Enable RLS for all relevant tables
+ALTER TABLE public.properties ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.tenants ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.documents ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.rent_payments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.workspaces ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.workspace_members ENABLE ROW LEVEL SECURITY;
+
+-- Function to get the selected workspace of the current user
+CREATE OR REPLACE FUNCTION public.get_selected_workspace_id() RETURNS uuid AS $$
+BEGIN
+  RETURN (SELECT selected_workspace_id FROM public.profiles WHERE id = auth.uid());
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Policies for 'properties'
+DROP POLICY IF EXISTS "Users can view properties in their workspace" ON public.properties;
+CREATE POLICY "Users can view properties in their workspace" ON public.properties FOR SELECT USING (workspace_id = public.get_selected_workspace_id());
+DROP POLICY IF EXISTS "Users can manage properties in their workspace" ON public.properties;
+CREATE POLICY "Users can manage properties in their workspace" ON public.properties FOR ALL USING (workspace_id = public.get_selected_workspace_id());
+
+-- Policies for 'tenants'
+DROP POLICY IF EXISTS "Users can view tenants in their workspace" ON public.tenants;
+CREATE POLICY "Users can view tenants in their workspace" ON public.tenants FOR SELECT USING (workspace_id = public.get_selected_workspace_id());
+DROP POLICY IF EXISTS "Users can manage tenants in their workspace" ON public.tenants;
+CREATE POLICY "Users can manage tenants in their workspace" ON public.tenants FOR ALL USING (workspace_id = public.get_selected_workspace_id());
+
+-- Add similar policies for documents, transactions, and rent_payments...
+
+-- Policies for 'documents'
+DROP POLICY IF EXISTS "Users can view documents in their workspace" ON public.documents;
+CREATE POLICY "Users can view documents in their workspace" ON public.documents FOR SELECT USING (workspace_id = public.get_selected_workspace_id());
+DROP POLICY IF EXISTS "Users can manage documents in their workspace" ON public.documents;
+CREATE POLICY "Users can manage documents in their workspace" ON public.documents FOR ALL USING (workspace_id = public.get_selected_workspace_id());
+
+-- Policies for 'transactions'
+DROP POLICY IF EXISTS "Users can view transactions in their workspace" ON public.transactions;
+CREATE POLICY "Users can view transactions in their workspace" ON public.transactions FOR SELECT USING (workspace_id = public.get_selected_workspace_id());
+DROP POLICY IF EXISTS "Users can manage transactions in their workspace" ON public.transactions;
+CREATE POLICY "Users can manage transactions in their workspace" ON public.transactions FOR ALL USING (workspace_id = public.get_selected_workspace_id());
+
+-- Policies for 'rent_payments'
+DROP POLICY IF EXISTS "Users can view rent_payments in their workspace" ON public.rent_payments;
+CREATE POLICY "Users can view rent_payments in their workspace" ON public.rent_payments FOR SELECT USING (workspace_id = public.get_selected_workspace_id());
+DROP POLICY IF EXISTS "Users can manage rent_payments in their workspace" ON public.rent_payments;
+CREATE POLICY "Users can manage rent_payments in their workspace" ON public.rent_payments FOR ALL USING (workspace_id = public.get_selected_workspace_id());
+
+
+-- Policies for 'workspaces' and 'workspace_members'
+-- Users can see workspaces they are a member of.
+DROP POLICY IF EXISTS "Users can view workspaces they belong to" ON public.workspaces;
+CREATE POLICY "Users can view workspaces they belong to" ON public.workspaces FOR SELECT USING (
+  id IN (SELECT workspace_id FROM public.workspace_members WHERE user_id = auth.uid())
+);
+
+-- Users can see members of workspaces they belong to.
+DROP POLICY IF EXISTS "Users can view members of their workspaces" ON public.workspace_members;
+CREATE POLICY "Users can view members of their workspaces" ON public.workspace_members FOR SELECT USING (
+  workspace_id IN (SELECT workspace_id FROM public.workspace_members WHERE user_id = auth.uid())
+);
+
+-- Admins of a workspace can manage members.
+DROP POLICY IF EXISTS "Admins can manage workspace members" ON public.workspace_members;
+CREATE POLICY "Admins can manage workspace members" ON public.workspace_members FOR ALL USING (
+    workspace_id IN (SELECT workspace_id FROM public.workspace_members WHERE user_id = auth.uid() AND role = 'admin')
 );
 
 -- Indexes for performance

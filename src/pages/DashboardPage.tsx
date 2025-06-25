@@ -4,12 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Building2, FileText, TrendingUp, Users, Calendar, Clock, DollarSign, House } from "lucide-react";
 import { Link } from "react-router-dom";
 import { EmptyDashboardState } from "@/components/empty-states/empty-dashboard";
+import OwnerEmptyState from "@/components/owners/OwnerEmptyState";
+import { useOwners } from "@/contexts/OwnerContext";
 import { useProperties } from "@/hooks/useProperties";
 import { useTenants } from "@/hooks/useTenants";
 import { useTransactions } from "@/hooks/useTransactions";
 
 const DashboardPage = () => {
   // Hooks de données
+  const { noOwners } = useOwners();
   const { properties, loading: loadingProperties } = useProperties();
   const { tenants, loading: loadingTenants } = useTenants();
   const { transactions, loading: loadingTransactions } = useTransactions();
@@ -37,7 +40,7 @@ const DashboardPage = () => {
 
   // Gestion de l'état de chargement et de données
   const loading = loadingProperties || loadingTenants || loadingTransactions;
-  const hasData = properties?.length > 0 || tenants?.length > 0 || transactions?.length > 0;
+  const hasData = properties?.length > 0 || tenants?.length > 0;
 
   // Calcul des statistiques
   const stats = [
@@ -90,6 +93,14 @@ const DashboardPage = () => {
     }))
     .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
     .slice(0, 3) || [];
+
+  if (noOwners) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <OwnerEmptyState />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">

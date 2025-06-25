@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Table, User } from 'lucide-react';
+import OwnerSwitcher from './OwnerSwitcher';
 import { motion, AnimatePresence } from 'framer-motion';
 interface SidebarProps {
   className?: string;
@@ -17,6 +19,17 @@ const Sidebar: React.FC<SidebarProps> = ({
   className
 }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/login', { replace: true });
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+    }
+  };
   const [showSubMenu, setShowSubMenu] = useState(false);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([{
     label: 'Vue globale',
@@ -150,6 +163,20 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </li>;
           }
 
+          // Special handling for Déconnexion
+          if (item.label === 'Déconnexion') {
+            return (
+              <li key={index}>
+                <button
+                  onClick={handleLogout}
+                  className={cn("flex items-center justify-center rounded-lg px-4 py-2 sm:py-2.5 md:py-3 text-sm font-medium transition-colors w-full min-h-[36px] md:min-h-[44px]", "bg-[#9CA3AF] text-white hover:bg-[#9CA3AF]/80")}
+                >
+                  {item.label}
+                </button>
+              </li>
+            );
+          }
+
           // Regular menu items
           return <li key={index}>
                 <Link to={item.path} className={cn("flex items-center justify-center rounded-lg px-4 py-2 sm:py-2.5 md:py-3 text-sm font-medium transition-colors w-full min-h-[36px] md:min-h-[44px]", item.active ? "bg-[#E84A33] text-white" : "bg-[#9CA3AF] text-white hover:bg-[#9CA3AF]/80")}>
@@ -160,12 +187,9 @@ const Sidebar: React.FC<SidebarProps> = ({
         </ul>
       </nav>
 
-      {/* Owner Section */}
-      <div className="p-3 bg-[#4A4F55] mt-auto">
-        <div className="rounded-lg p-3 text-center bg-slate-400">
-          <div className="text-xs font-medium text-gray-300">Propriétaire</div>
-          <div className="text-sm font-medium text-white mt-0.5">M. ZEKE Philippe</div>
-        </div>
+      {/* Owner Switcher */}
+      <div className="p-3 mt-auto">
+        <OwnerSwitcher />
       </div>
     </div>;
 };

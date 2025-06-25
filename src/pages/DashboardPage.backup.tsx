@@ -13,6 +13,7 @@ import { useTransactions } from '@/hooks/useTransactions';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { toast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const DashboardPage: React.FC = () => {
   // Utilisation des hooks pour récupérer les données
