@@ -9,20 +9,27 @@ export default function OnboardingPage() {
   const { updateProfile } = useProfile();
 
   const handleSelection = async (role: 'owner' | 'agent') => {
-    toast.loading('Mise à jour du profil...');
+    console.log('[Onboarding] Clic sur le choix', role);
+    toast.loading(`[Onboarding] Début de la mise à jour du profil pour le rôle : ${role}`);
     try {
+      console.log('[Onboarding] Appel updateProfile', { role });
       await updateProfile({ role } as any); // Typage dynamique pour update
-      toast.success('Rôle enregistré : ' + (role === 'agent' ? 'Agent' : 'Propriétaire'));
+      toast.success(`[Onboarding] Rôle enregistré : ${role === 'agent' ? 'Agent' : 'Propriétaire'}`);
+      console.log('[Onboarding] Succès updateProfile, navigation...');
       if (role === 'agent') {
         navigate('/workspace/create'); // Rediriger vers la création de workspace
+        console.log('[Onboarding] Navigation vers /workspace/create');
       } else {
         // Pour un propriétaire, on peut le rediriger vers une page simplifiée
         navigate('/');
+        console.log('[Onboarding] Navigation vers /');
       }
     } catch (err: any) {
-      toast.error('Erreur lors de la mise à jour du profil : ' + (err?.message || 'Erreur inconnue'));
+      toast.error(`[Onboarding] Erreur lors de la mise à jour du profil : ${(err?.message || 'Erreur inconnue')}`);
+      console.error('[Onboarding] Erreur lors de la mise à jour du profil', err);
     } finally {
       toast.dismiss();
+      console.log('[Onboarding] Fin du process handleSelection');
     }
   };
 

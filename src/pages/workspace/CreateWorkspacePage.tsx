@@ -1,114 +1,164 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { useProfile } from '@/hooks/useProfile';
+import { authenticatedRequest } from '@/utils/supabase';
+import { supabase } from '@/integrations/supabase/client';
+import { Loader2 } from 'lucide-react';
 
 export default function CreateWorkspacePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { hasWorkspace, loading: workspaceLoading } = useWorkspace();
   const { updateProfile } = useProfile();
-  const [workspaceName, setWorkspaceName] = useState('');
-  const [loading, setLoading] = useState(false);
 
+  const [workspaceName, setWorkspaceName] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  
+  // Rediriger vers le tableau de bord si l'utilisateur a déjà un workspace
+  useEffect(() => {
+    if (!workspaceLoading && hasWorkspace) {
+      toast.info('Vous avez déjà un espace de travail');
+      navigate('/');
+    }
+  }, [hasWorkspace, workspaceLoading, navigate]);
+  
+  // Gestion d’une erreur détaillée côté UI
+  const [detailedError, setDetailedError] = useState<string | null>(null);
+
+  // Afficher un loader pendant la vérification du workspace
+  if (workspaceLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <p className="text-muted-foreground">Chargement de votre espace de travail...</p>
+        </div>
+      </div>
+    );
+  }
+
+  /* -------------------------------------------------------------------- */
+  /* --------------------  HANDLE CREATE WORKSPACE  --------------------- */
+  /* -------------------------------------------------------------------- */
   const handleCreateWorkspace = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!workspaceName.trim() || !user) {
+    
+    if (!workspaceName.trim()) {
       toast.error("Le nom de l'espace de travail ne peut pas être vide.");
       return;
     }
+    
+    if (!user) {
+      toast.error('Vous devez être connecté pour créer un espace de travail');
+      navigate('/login');
+      return;
+    }
 
-    setLoading(true);
+    setSubmitting(true);
+    let loadingToast: string | number = '';
 
     try {
-      // 1. Créer le workspace
-      toast.loading('Création de l’espace de travail...');
-      console.log('Tentative de création du workspace avec:', { name: workspaceName, owner_id: user.id });
-      const { error: insertError } = await supabase
-        .from('workspaces')
-        .insert({ name: workspaceName, owner_id: user.id });
+      loadingToast = toast.loading('Création de l\'espace de travail…');
 
-      if (insertError) {
-        console.error("ERREUR PENDANT L'INSERTION:", insertError);
-        toast.error("Erreur lors de la création de l’espace de travail : " + insertError.message);
-        throw insertError;
-      }
-      toast.success('Espace de travail créé. Récupération des informations...');
-      console.log('SUCCÈS: Workspace inséré. Tentative de récupération...');
+      await authenticatedRequest(async () => {
+        // 1. Création du workspace
+        toast.loading('Création de l\'espace de travail…', { id: loadingToast });
+        
+        const { data: insertedWorkspace, error: insertError } = await supabase
+          .from('workspaces')
+          .insert({ 
+            name: workspaceName, 
+            owner_id: user.id 
+          })
+          .select('id')
+          .single();
 
-      // Étape 2: Ajouter le créateur comme membre admin
-    let workspaceId: string | null = null;
-    // On récupère l'id du workspace tout juste créé (par le nom et la date)
-    const { data: workspaceCreated, error: selectCreatedError } = await supabase
-      .from('workspaces')
-      .select('id')
-      .eq('name', workspaceName)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
+        if (insertError || !insertedWorkspace) {
+          throw insertError || new Error('Échec de la création du workspace');
+        }
 
-    if (selectCreatedError || !workspaceCreated) {
-      toast.error('Erreur lors de la récupération du workspace créé : ' + (selectCreatedError?.message || 'Non trouvé'));
-      throw selectCreatedError || new Error('Workspace non trouvé');
-    }
-    workspaceId = workspaceCreated.id;
+        const workspaceId = insertedWorkspace.id;
+        toast.success(`Workspace créé avec succès`, { id: loadingToast });
 
-    toast.success('Workspace récupéré. Ajout du membre administrateur...');
-    console.log('SUCCÈS: Workspace retrouvé:', workspaceCreated);
+        // 2. Ajout du créateur comme membre admin
+        toast.loading('Ajout en tant qu\'administrateur…', { id: loadingToast });
+        
+        const { error: memberError } = await supabase
+          .from('workspace_members')
+          .insert({ 
+            workspace_id: workspaceId, 
+            user_id: user.id, 
+            role: 'admin' 
+          });
 
-    // 2. Ajouter le créateur comme membre admin
-    const { error: memberError } = await supabase
-      .from('workspace_members')
-      .insert({ workspace_id: workspaceId, user_id: user.id, role: 'admin' });
+        if (memberError) {
+          throw memberError;
+        }
 
-    if (memberError) {
-      toast.error('Erreur lors de l’ajout du membre administrateur : ' + memberError.message);
-      throw memberError;
-    }
+        // 3. Mise à jour du profil avec le nouveau workspace sélectionné
+        toast.loading('Mise à jour de votre profil…', { id: loadingToast });
+        
+        await updateProfile({ 
+          selected_workspace_id: workspaceId 
+        } as any);
 
-    // 3. Sélectionner le workspace dont l'utilisateur est admin (sécurité multi-tenant)
-    const { data: adminWorkspace, error: adminSelectError } = await supabase
-      .from('workspace_members')
-      .select('workspace_id')
-      .eq('user_id', user.id)
-      .eq('role', 'admin')
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
-
-    if (adminSelectError || !adminWorkspace) {
-      toast.error('Erreur lors de la récupération du workspace admin : ' + (adminSelectError?.message || 'Non trouvé'));
-      throw adminSelectError || new Error('Workspace admin non trouvé');
-    }
-    workspaceId = adminWorkspace.workspace_id;
-
-    toast.success('Membre administrateur ajouté. Mise à jour du profil...');
-
-    // 4. Mettre à jour le workspace sélectionné pour l'utilisateur (via useProfile)
-    try {
-      await updateProfile({ selected_workspace_id: workspaceId } as any); // Typage dynamique pour update
-      toast.success('Profil utilisateur mis à jour avec succès.');
-    } catch (profileUpdateError: any) {
-      toast.error('Erreur lors de la mise à jour du profil : ' + (profileUpdateError.message || profileUpdateError));
-      throw profileUpdateError;
-    }  
-
-      toast.success(`L'espace de travail "${workspaceName}" a été créé et configuré !`);
-      navigate('/'); // Rediriger vers le tableau de bord
-
+        // Rafraîchir la session pour s'assurer que les données sont à jour
+        await supabase.auth.refreshSession();
+        
+        // Tout s'est bien passé, on redirige
+        toast.success(`Bienvenue sur votre nouvel espace "${workspaceName}" !`, { 
+          id: loadingToast,
+          duration: 3000 
+        });
+        
+        // Petite pause pour laisser le temps de voir le message de succès
+        setTimeout(() => {
+          navigate('/');
+        }, 500);
+      });
+      
     } catch (error: any) {
-      toast.error(error.message || 'Une erreur est survenue.');
+      console.error('[CreateWorkspace] Error:', error);
+      
+      const errorMessage = error?.message || 'Une erreur est survenue lors de la création de l\'espace de travail';
+      
+      toast.error(errorMessage, { 
+        id: loadingToast,
+        duration: 5000 
+      });
+      // Affichage d’un message d’erreur détaillé côté UI
+      setDetailedError(errorMessage);
+      
+      // Si l'erreur est liée à l'authentification, on redirige vers la page de connexion
+      if (error?.message?.includes('authentification') || error?.status === 401) {
+        setTimeout(() => {
+          navigate('/login');
+        }, 1500);
+      }
     } finally {
-      setLoading(false);
-      toast.dismiss();
+      if (!loadingToast) {
+        toast.dismiss(loadingToast);
+      }
+      setSubmitting(false);
     }
   };
 
+  /* -------------------------------------------------------------------- */
+  /* ---------------------------  RENDER  -------------------------------- */
+  /* -------------------------------------------------------------------- */
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <Card className="w-full max-w-md">
@@ -118,21 +168,25 @@ export default function CreateWorkspacePage() {
             Donnez un nom à votre agence ou entreprise.
           </CardDescription>
         </CardHeader>
+
         <CardContent>
           <form onSubmit={handleCreateWorkspace} className="space-y-4">
             <div>
-              <Label htmlFor="workspace-name">Nom de l'espace de travail</Label>
+              <Label htmlFor="workspace-name">
+                Nom de l'espace de travail
+              </Label>
               <Input
                 id="workspace-name"
                 type="text"
                 value={workspaceName}
                 onChange={(e) => setWorkspaceName(e.target.value)}
                 required
-                placeholder="Ex: Agence ImmoPlus"
+                placeholder="Ex : Agence ImmoPlus"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Création...' : "Créer l'espace de travail"}
+
+            <Button type="submit" className="w-full" disabled={submitting}>
+              {submitting ? 'Création…' : "Créer l'espace de travail"}
             </Button>
           </form>
         </CardContent>

@@ -1,19 +1,13 @@
 export interface Profile {
   id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  address: string;
-  postal_code: string;
-  city: string;
-  notification_email: boolean;
-  notification_loyer: boolean;
-  notification_contrats: boolean;
-  notification_reclamations: boolean;
-  notification_entretien: boolean;
-  notification_push: boolean;
-  notification_rapports: boolean;
-  created_at: string;
-  updated_at: string;
+  username: string | null;
+  avatar_url: string | null;
+  email: string | null;
+  updated_at: string | null;
+  selected_workspace_id: string | null;
+  role: 'owner' | 'agent' | 'admin' | null;
+  selected_owner_id: string | null;
+  full_name: string | null;
+  phone: string | null;
+  created_at: string | null;
 }

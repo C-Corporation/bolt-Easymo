@@ -9,4 +9,24 @@ const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as strin
 // Ensure that VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are defined in your environment (e.g. .env.local)
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+// Singleton pattern to prevent HMR from creating multiple Supabase clients in development
+declare global {
+  // eslint-disable-next-line no-var
+  var __supabase_singleton__: ReturnType<typeof createClient<Database>> | undefined;
+}
+
+const createSupabaseClient = () => {
+  return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+};
+
+if (typeof globalThis.__supabase_singleton__ === 'undefined') {
+  globalThis.__supabase_singleton__ = createSupabaseClient();
+}
+
+export const supabase = globalThis.__supabase_singleton__;
+
+// Expose Supabase client globally in development mode for easier debugging
+if (import.meta.env.DEV && typeof window !== 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).supabase = supabase;
+}

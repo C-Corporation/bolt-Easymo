@@ -75,6 +75,11 @@ export interface Database {
           email: string | null;
           updated_at: string | null;
           selected_workspace_id: string | null;
+          role: 'owner' | 'agent' | 'admin' | null;
+          selected_owner_id: string | null;
+          full_name: string | null;
+          phone: string | null;
+          created_at: string | null;
         };
         Insert: {
           id: string;
@@ -83,6 +88,11 @@ export interface Database {
           email?: string | null;
           updated_at?: string | null;
           selected_workspace_id?: string | null;
+          role?: 'owner' | 'agent' | 'admin' | null;
+          selected_owner_id?: string | null;
+          full_name?: string | null;
+          phone?: string | null;
+          created_at?: string | null;
         };
         Update: {
           id?: string;
@@ -91,6 +101,11 @@ export interface Database {
           email?: string | null;
           updated_at?: string | null;
           selected_workspace_id?: string | null;
+          role?: 'owner' | 'agent' | 'admin' | null;
+          selected_owner_id?: string | null;
+          full_name?: string | null;
+          phone?: string | null;
+          created_at?: string | null;
         };
       };
       properties: {

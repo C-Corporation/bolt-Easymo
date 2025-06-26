@@ -20,9 +20,15 @@ const DashboardPage = () => {
   // Fonctions de calcul
   const calculateMonthlyRent = (transactions: any[]) => {
     return transactions
-      ?.filter(t => t.type === 'income' && t.category === 'loyer' && 
-                 new Date(t.date) >= new Date(new Date().setMonth(new Date().getMonth() - 1)) &&
-                 new Date(t.date) < new Date(new Date().setMonth(new Date().getMonth() + 1)))
+      ?.filter(t => {
+        if (!t.date) return false; // Guard against null/undefined dates
+        const transactionDate = new Date(t.date);
+        if (isNaN(transactionDate.getTime())) return false; // Guard against invalid date strings
+
+        return t.type === 'income' && t.category === 'loyer' && 
+               transactionDate >= new Date(new Date().setMonth(new Date().getMonth() - 1)) &&
+               transactionDate < new Date(new Date().setMonth(new Date().getMonth() + 1));
+      })
       .reduce((sum, t) => sum + t.amount, 0)
       .toLocaleString('fr-FR', { style: 'currency', currency: 'XOF' });
   };
@@ -72,7 +78,7 @@ const DashboardPage = () => {
 
   // Calcul des activités récentes
   const recentActivities = transactions
-    ?.filter(t => t.type === 'income' && t.category === 'loyer')
+    ?.filter(t => t.type === 'income' && t.category === 'loyer' && t.date && !isNaN(new Date(t.date).getTime()))
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 3)
     .map(t => ({
@@ -88,10 +94,10 @@ const DashboardPage = () => {
       id: tenant.id,
       tenant: `${tenant.first_name} ${tenant.last_name}`,
       amount: calculateTenantRent(tenant, properties),
-      dueDate: new Date(new Date().setDate(new Date().getDate() + 15)).toLocaleDateString('fr-FR'),
+      dueDate: new Date(new Date().setDate(new Date().getDate() + 15)), // Garder comme objet Date
       status: 'À venir'
     }))
-    .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+    .sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime()) // Trier directement sur les objets Date
     .slice(0, 3) || [];
 
   if (noOwners) {
@@ -161,7 +167,7 @@ const DashboardPage = () => {
                   <div key={payment.id} className="flex items-center justify-between">
                     <div>
                       <h3 className="font-medium">{payment.tenant}</h3>
-                      <p className="text-sm text-gray-500">Échéance : {payment.dueDate}</p>
+                      <p className="text-sm text-gray-500">Échéance : {payment.dueDate.toLocaleDateString('fr-FR')}</p>
                     </div>
                     <div className="flex items-center space-x-4">
                       <span className="font-medium">{payment.amount.toLocaleString('fr-FR')} XOF</span>

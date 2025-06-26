@@ -32,7 +32,7 @@ export const useTenants = (): UseTenantsReturn => {
       const { data, error } = await supabase
         .from('tenants')
         .select('*')
-        // Le RLS s'occupe de filtrer par workspace_id
+        .eq('workspace_id', profile.selected_workspace_id)
         .order('last_name', { ascending: true })
         .order('first_name', { ascending: true });
 

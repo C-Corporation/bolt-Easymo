@@ -25,7 +25,7 @@ export default function LoginPage() {
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('email')
-          .ilike('username', identifier)
+          .eq('username', identifier.toLowerCase())
           .maybeSingle();
 
         if (profileError) throw profileError;
@@ -37,6 +37,7 @@ export default function LoginPage() {
         }
 
         email = profile.email;
+        console.log('Email trouvé pour le pseudo', identifier, ':', email);
       } catch (error) {
         console.error("Erreur lors de la recherche du profil:", error);
         toast.error("Erreur lors de la connexion. Veuillez réessayer.");

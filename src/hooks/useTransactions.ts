@@ -2,8 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import type { Transaction, TransactionInsert, TransactionUpdate } from '@/types/transaction';
-import type { Tenant } from '@/types/tenant';
-import type { Property } from '@/types/property';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface UseTransactionsReturn {
   transactions: Transaction[];
@@ -15,15 +14,22 @@ interface UseTransactionsReturn {
 }
 
 export const useTransactions = (): UseTransactionsReturn => {
+  const { profile } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchTransactions = useCallback(async () => {
+    if (!profile?.selected_workspace_id) {
+      setTransactions([]);
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const { data, error } = await supabase
         .from('transactions')
         .select('*')
+        .eq('workspace_id', profile.selected_workspace_id)
         .order('date', { ascending: false })
         .order('created_at', { ascending: false });
       
@@ -39,13 +45,27 @@ export const useTransactions = (): UseTransactionsReturn => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [profile?.selected_workspace_id]);
 
   const addTransaction = useCallback(async (transaction: TransactionInsert) => {
+    if (!profile?.selected_workspace_id) {
+      toast({
+        title: 'Erreur',
+        description: "Aucun espace de travail n'est sélectionné.",
+        variant: 'destructive',
+      });
+      return false;
+    }
+
+    const transactionWithWorkspace = {
+      ...transaction,
+      workspace_id: profile.selected_workspace_id,
+    };
+
     try {
       const { error } = await supabase
         .from('transactions')
-        .insert([transaction]);
+        .insert([transactionWithWorkspace]);
 
       if (error) throw error;
 
@@ -65,7 +85,7 @@ export const useTransactions = (): UseTransactionsReturn => {
       });
       return false;
     }
-  }, [fetchTransactions]);
+  }, [fetchTransactions, profile?.selected_workspace_id]);
 
   const updateTransaction = useCallback(async (id: string, transaction: TransactionUpdate) => {
     try {
@@ -124,7 +144,7 @@ export const useTransactions = (): UseTransactionsReturn => {
   // Fetch transactions on component mount
   useEffect(() => {
     fetchTransactions();
-  }, [fetchTransactions]);
+  }, [fetchTransactions, profile?.selected_workspace_id]);
 
   return {
     transactions,
